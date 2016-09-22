@@ -15,7 +15,7 @@ import { Popup } from '../Popup/index';
 import './Callout.scss';
 
 const BEAK_ORIGIN_POSITION = { top: 0, left: 0 };
-const OFF_SCREEN_POSITION = { top: -9999, left: 0 };
+const OFF_SCREEN_POSITION = { top: 0, left: 0 };
 
 export interface ICalloutState {
   positions?: any;
@@ -69,7 +69,7 @@ export class Callout extends React.Component<ICalloutProps, ICalloutState> {
     let content = (
       <div ref={ (host: HTMLDivElement) => this._hostElement = host } className={ 'ms-Callout-container' }>
         <div
-          className={ css('ms-Callout', className, slideDirectionalClassName ? `ms-u-${ slideDirectionalClassName }` : '') }
+          className={ css('ms-Callout', className, slideDirectionalClassName ? 'ms-u-' + slideDirectionalClassName : '') }
           style={ ((positions) ? positions.callout : OFF_SCREEN_POSITION) }
           ref={ (callout: HTMLDivElement) => this._calloutElement = callout }
           >
@@ -102,6 +102,8 @@ export class Callout extends React.Component<ICalloutProps, ICalloutState> {
     let { targetElement } = this.props;
     let target = ev.target as HTMLElement;
 
+    console.log("triggeerreed");
+
     if (ev.target !== window &&
       this._hostElement &&
       !elementContains(this._hostElement, target) &&
@@ -112,22 +114,27 @@ export class Callout extends React.Component<ICalloutProps, ICalloutState> {
 
   @autobind
   private _onLayerDidMount() {
+    if (this.props.onLayerMounted) {
+      this.props.onLayerMounted();
+    }
+
+    this._updatePosition();
+
+    this._setFocusAndCreateEvents = this._setFocusAndCreateEvents.bind(this);
+    setTimeout(this._setFocusAndCreateEvents, 100);
+  }
+
+  private _setFocusAndCreateEvents() {
+    if (this.props.setInitialFocus) {
+      focusFirstChild(this._calloutElement);
+    }
+
     // This is added so the callout will dismiss when the window is scrolled
     // but not when something inside the callout is scrolled.
     this._events.on(window, 'scroll', this._dismissOnLostFocus, true);
     this._events.on(window, 'resize', this.dismiss, true);
     this._events.on(window, 'focus', this._dismissOnLostFocus, true);
     this._events.on(window, 'click', this._dismissOnLostFocus, true);
-
-    if (this.props.setInitialFocus) {
-      focusFirstChild(this._calloutElement);
-    }
-
-    if (this.props.onLayerMounted) {
-      this.props.onLayerMounted();
-    }
-
-    this._updatePosition();
   }
 
   private _updatePosition() {
