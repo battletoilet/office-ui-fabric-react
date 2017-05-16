@@ -12,7 +12,7 @@ let del = require('del');
 let gulpConnect = require('gulp-connect');
 
 let isProduction = process.argv.indexOf('--production') >= 0;
-let isNuke = process.argv.indexOf('nuke') >= 0;
+let isNuke = process.argv.indexOf('nuke') >= 0; // Testing comment here
 let {
   libFolder,
   distFolder,
