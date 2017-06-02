@@ -141,6 +141,7 @@ $coachmarkCircleRadius: 50%;
 .coachmarkIsWiggling {
   @include coachmarkPopWiggleSettings();
   animation-name: pop;
+  cursor: pointer;
 
   :global(.ms-Callout) {
      @include coachmarkPopWiggleSettings();
