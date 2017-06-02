@@ -9,10 +9,12 @@ import {
 import { TeachingBubbleBasicExample } from './examples/TeachingBubble.Basic.Example';
 import { TeachingBubbleCondensedExample } from './examples/TeachingBubble.Condensed.Example';
 import { TeachingBubbleIllustrationExample } from './examples/TeachingBubble.Illustration.Example';
+import { TeachingBubbleCoachmarkExample } from './examples/TeachingBubble.Coachmark.Example';
 
 const TeachingBubbleBasicExampleCode = require('!raw-loader!office-ui-fabric-react/src/components/TeachingBubble/examples/TeachingBubble.Basic.Example.tsx') as string;
 const TeachingBubbleCondensedExampleCode = require('!raw-loader!office-ui-fabric-react/src/components/TeachingBubble/examples/TeachingBubble.Condensed.Example.tsx') as string;
 const TeachingBubbleIllustrationExampleCode = require('!raw-loader!office-ui-fabric-react/src/components/TeachingBubble/examples/TeachingBubble.Basic.Example.tsx') as string;
+const TeachingBubbleCoachmarkExampleCode = require('!raw-loader!office-ui-fabric-react/src/components/TeachingBubble/examples/TeachingBubble.Coachmark.Example.tsx') as string;
 
 export class TeachingBubblePage extends React.Component<any, any> {
   public render() {
@@ -30,6 +32,9 @@ export class TeachingBubblePage extends React.Component<any, any> {
             </ExampleCard>
             <ExampleCard title='TeachingBubble with Illustration' code={ TeachingBubbleIllustrationExampleCode }>
               <TeachingBubbleIllustrationExample />
+            </ExampleCard>
+            <ExampleCard title='TeachingBubble Coachmark' code={ TeachingBubbleCoachmarkExampleCode }>
+              <TeachingBubbleCoachmarkExample />
             </ExampleCard>
           </LayerHost>
         }

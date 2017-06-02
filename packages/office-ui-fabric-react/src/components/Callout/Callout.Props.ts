@@ -163,4 +163,9 @@ export interface ICalloutProps extends React.Props<Callout | CalloutContent> {
    * @deprecated
    */
   targetElement?: HTMLElement;
+
+  /**
+   * Classnames for the parent element
+   */
+  parentClassName?: string;
 }

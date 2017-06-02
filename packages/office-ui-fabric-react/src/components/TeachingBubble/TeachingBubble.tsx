@@ -11,6 +11,7 @@ const styles: any = stylesImport;
 
 export interface ITeachingBubbleState {
   isTeachingBubbleVisible?: boolean;
+  isCoachmarkAnimating?: boolean;
 }
 
 export class TeachingBubble extends BaseComponent<ITeachingBubbleProps, ITeachingBubbleState> {
@@ -26,26 +27,61 @@ export class TeachingBubble extends BaseComponent<ITeachingBubbleProps, ITeachin
     }
   };
 
+  private _currentHeight: number;
+  private _currentWidth: number;
+  private _coachmark: HTMLDivElement;
+
   // Constructor
   constructor(props: ITeachingBubbleProps) {
     super(props);
 
     this.state = {
+      isCoachmarkAnimating: false
     };
   }
 
-  public render() {
-    let { calloutProps, targetElement } = this.props;
+  public componentDidMount() {
+    const rect = this._coachmark.getBoundingClientRect();
+    const height = rect.height;
+    const width = rect.width;
+  }
 
+  public render() {
+    let { calloutProps, targetElement, isCoachmark } = this.props;
+    const classes = css(
+      'ms-TeachingBubble',
+      styles.root,
+      {
+        ['ms-TeachingBubble--coachmark']: isCoachmark,
+        [styles.coachmark]: isCoachmark,
+        [styles.animate]: isCoachmark,
+        [styles.fadeOut]: this.state.isCoachmarkAnimating
+      }
+    );
     return (
       <Callout
-        className={ css('ms-TeachingBubble', styles.root) }
-        ref={ this._resolveRef('_callout') }
+        className={ classes }
         targetElement={ targetElement }
+        ref={ this._resolveRef('_callout') }
+        parentClassName={ css({ [styles.coachmarkContainer]: isCoachmark }) }
         {...calloutProps}
       >
-        <TeachingBubbleContent { ...this.props } />
+        <div className={ css({ [styles.animationLayer]: isCoachmark, ['TeachingBubble-animationLayer']: isCoachmark }) }
+          onClick={ () => {
+            this.setState({
+              isCoachmarkAnimating: true
+            });
+
+          } } ref={ this._resolveRef('_coachmark') }>
+          <TeachingBubbleContent { ...this.props } />
+        </div>
       </Callout>
     );
+  }
+
+  private _coachmarkOnClickHandler() {
+
+    // Set the height and width of the element
+
   }
 }

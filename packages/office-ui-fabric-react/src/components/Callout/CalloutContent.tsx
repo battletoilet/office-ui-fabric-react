@@ -104,7 +104,8 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
       beakStyle,
       children,
       beakWidth,
-      backgroundColor } = this.props;
+      backgroundColor,
+      parentClassName } = this.props;
     let { positions } = this.state;
     let beakStyleWidth = beakWidth;
 
@@ -127,7 +128,7 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
     let contentMaxHeight: number = this._getMaxHeight();
     let beakVisible: boolean = isBeakVisible && (!!targetElement || !!target);
     let content = (
-      <div ref={ this._resolveRef('_hostElement') } className={ css('ms-Callout-container', styles.container) }>
+      <div ref={ this._resolveRef('_hostElement') } className={ css('ms-Callout-container', styles.container, parentClassName) }>
         <div
           className={
             css(
