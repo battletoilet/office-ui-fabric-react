@@ -12,6 +12,7 @@ const styles: any = stylesImport;
 export interface ITeachingBubbleState {
   isTeachingBubbleVisible?: boolean;
   isCoachmarkAnimating?: boolean;
+  isCoachmarkWiggling?: boolean;
 }
 
 export class TeachingBubble extends BaseComponent<ITeachingBubbleProps, ITeachingBubbleState> {
@@ -36,7 +37,8 @@ export class TeachingBubble extends BaseComponent<ITeachingBubbleProps, ITeachin
     super(props);
 
     this.state = {
-      isCoachmarkAnimating: false
+      isCoachmarkAnimating: false,
+      isCoachmarkWiggling: true
     };
   }
 
@@ -52,10 +54,7 @@ export class TeachingBubble extends BaseComponent<ITeachingBubbleProps, ITeachin
       'ms-TeachingBubble',
       styles.root,
       {
-        ['ms-TeachingBubble--coachmark']: isCoachmark,
-        [styles.coachmark]: isCoachmark,
-        [styles.animate]: isCoachmark,
-        [styles.fadeOut]: this.state.isCoachmarkAnimating
+        ['ms-TeachingBubble--coachmark']: isCoachmark
       }
     );
     return (
@@ -63,15 +62,19 @@ export class TeachingBubble extends BaseComponent<ITeachingBubbleProps, ITeachin
         className={ classes }
         targetElement={ targetElement }
         ref={ this._resolveRef('_callout') }
-        parentClassName={ css({ [styles.coachmarkContainer]: isCoachmark }) }
+        parentClassName={ css({
+          [styles.coachmarkCalloutContainer]: isCoachmark,
+          [styles.coachmarkIsWiggling]: this.state.isCoachmarkWiggling,
+          [styles.coachmarkIsAnimating]: this.state.isCoachmarkAnimating
+        }) }
         {...calloutProps}
       >
         <div className={ css({ [styles.animationLayer]: isCoachmark, ['TeachingBubble-animationLayer']: isCoachmark }) }
           onClick={ () => {
             this.setState({
-              isCoachmarkAnimating: true
+              isCoachmarkAnimating: true,
+              isCoachmarkWiggling: false
             });
-
           } } ref={ this._resolveRef('_coachmark') }>
           <TeachingBubbleContent { ...this.props } />
         </div>
