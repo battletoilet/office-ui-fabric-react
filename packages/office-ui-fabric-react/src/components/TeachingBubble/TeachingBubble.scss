@@ -134,6 +134,10 @@ $coachmarkCircleRadius: 50%;
   animation-delay: 0s;
 }
 
+@mixin coachMarkAnimateOutTransition {
+  transition: border-radius 250ms, width 500ms, height 500ms cubic-bezier(0.5, 0, 0, 1);
+}
+
 .coachmarkIsWiggling {
   @include coachmarkPopWiggleSettings();
   animation-name: pop;
@@ -144,6 +148,11 @@ $coachmarkCircleRadius: 50%;
   }
 }
 
+.coachmarkCalloutContainer .bodyContent,
+.coachmarkCalloutContainer .content {
+  overflow: hidden;
+}
+
 .coachmarkCalloutContainer {
   :global(.ms-Callout),
   .content {
@@ -151,7 +160,7 @@ $coachmarkCircleRadius: 50%;
     height: 50px;
     border-radius: $coachmarkCircleRadius;
     position: relative;
-    transition: border-radius, width, height 500ms cubic-bezier(0.5, 0, 0, 1);
+    @include coachMarkAnimateOutTransition();
 
     :global(.ms-Callout-beak) {
       left: -4px !important;
@@ -164,19 +173,19 @@ $coachmarkCircleRadius: 50%;
   :global(.ms-Callout-beakCurtain) {
     background-color: $ms-color-themePrimary;
     border-radius:  $coachmarkCircleRadius;
-    transition: border-radius, width, height 500ms cubic-bezier(0.5, 0, 0, 1);
+    @include coachMarkAnimateOutTransition();
   }
 
   :global(.ms-Callout-main) {
     border-radius:  $coachmarkCircleRadius;
-    transition: border-radius, width, height 500ms cubic-bezier(0.5, 0, 0, 1);
+    @include coachMarkAnimateOutTransition();
   }
 }
 
 .coachmarkCalloutContainer .bodyContent {
-  display: none;
   transition: transform 500ms cubic-bezier(0.5, 0, 0, 1);
   transform: scale(0);
+  transform-origin: top left;
 }
 
 .icon {
@@ -186,7 +195,7 @@ $coachmarkCircleRadius: 50%;
   height: 24px;
   margin-top: 13px;
   margin-left: 13px;
-  transition: opacity, transform 100ms cubic-bezier(0.33, 0, 0.66, 1);
+  transition: opacity 100ms, transform 100ms cubic-bezier(0.33, 0, 0.66, 1);
 }
 
 .coachmarkIsAnimating .icon {
@@ -198,7 +207,7 @@ $coachmarkCircleRadius: 50%;
 .coachmarkIsAnimating {
   :global(.ms-Callout),
   .content {
-    border-radius: 0;
+    border-radius: 1px;
     width: 362px;
     height: 116px;
 
