@@ -38,7 +38,7 @@ export class TeachingBubble extends BaseComponent<ITeachingBubbleProps, ITeachin
 
     this.state = {
       isCoachmarkAnimating: false,
-      isCoachmarkWiggling: true
+      isCoachmarkWiggling: props.isCoachmark // If it's not a Coachmark then we dont want to start animating the TeachingBubble right away
     };
   }
 

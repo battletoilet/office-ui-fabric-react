@@ -181,6 +181,7 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
     if (this.state.positions && !preventDismissOnScroll) {
       this._dismissOnLostFocus(ev);
     }
+    this._updatePosition();
   }
 
   protected _dismissOnLostFocus(ev: Event) {
