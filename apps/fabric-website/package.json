@@ -9,10 +9,10 @@
     "url": "https://github.com/OfficeDev/office-ui-fabric-react"
   },
   "scripts": {
-    "build": "gulp",
+    "build": "node --max_old_space_size=8192 ./node_modules/gulp/bin/gulp.js",
     "clean": "gulp clean",
     "start": "node node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack.serve.config.js --open",
-    "production": "gulp --production"
+    "production": "node --max_old_space_size=8192 ./node_modules/gulp/bin/gulp.js --production"
   },
   "license": "MIT",
   "devDependencies": {
