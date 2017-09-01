@@ -84,7 +84,7 @@
   var devUrl = getParameterByName('devUrl');
 
   if (devUrl) {
-    loadScript(devUrl);
+    scripts.push(devUrl);
   } else if (isLocal) {
     scripts.push.apply(scripts, reactDevelopment);
     scripts.push('fabric-site.js');
@@ -101,6 +101,8 @@
       scripts.push(baseProductionUrl + 'fabric-site.min.js?date=' + date);
     }
   }
+
+  loadScript(devUrl);
 
 </script>
 <script>
@@ -159,5 +161,5 @@
 
 <!--
   This page is inserted into dev.microsoft.com
-  END FABRIC WEBSITE
+  - END FABRIC WEBSITE
   -->
