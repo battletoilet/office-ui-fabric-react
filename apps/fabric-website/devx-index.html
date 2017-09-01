@@ -86,7 +86,7 @@
   var devUrl = getParameterByName('devUrl');
 
   if (devUrl) {
-    scripts.push(devUrl);
+    loadScript(devUrl);
   } else if (isLocal) {
     scripts.push.apply(scripts, reactDevelopment);
     scripts.push('fabric-site.js');
@@ -103,8 +103,6 @@
       scripts.push(baseProductionUrl + 'fabric-site.min.js?date=' + date);
     }
   }
-
-  loadScript(scripts);
 
 </script>
 <script>
