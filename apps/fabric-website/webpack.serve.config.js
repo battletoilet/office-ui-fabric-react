@@ -35,7 +35,10 @@ module.exports = {
       'office-ui-fabric-react/src': path.join(__dirname, 'node_modules/office-ui-fabric-react/src'),
       'office-ui-fabric-react/lib': path.join(__dirname, 'node_modules/office-ui-fabric-react/lib'),
       'Props.ts.js': 'Props',
-      'Example.tsx.js': 'Example'
+      'Example.tsx.js': 'Example',
+      'react': path.resolve(__dirname, 'node_modules', 'react'),
+      'react-dom': path.resolve(__dirname, 'node_modules', 'react-dom'),
+      'react-addons-test-utils': path.resolve(__dirname, 'node_modules', 'react-addons-test-utils')
     },
     extensions: ['.ts', '.tsx', '.js']
   },
