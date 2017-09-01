@@ -73,11 +73,6 @@
     return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
 
-  var reactProduction = [
-    '//cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.min.js',
-    '//cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.min.js'
-  ];
-
   var reactDevelopment = [
     '//cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.js',
     '//cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js'
@@ -97,18 +92,14 @@
     scripts.push('fabric-site.js');
   } else if (isDogfood) {
     if (noCompress) {
-      scripts.push.apply(scripts, reactDevelopment);
       scripts.push(baseDogfoodUrl + 'fabric-site.min.js?date=' + Date.now());
     } else {
-      scripts.push.apply(scripts, reactProduction);
       scripts.push(baseDogfoodUrl + 'fabric-site.js?date=' + Date.now());
     }
   } else {
     if (noCompress) {
-      scripts.push.apply(scripts, reactDevelopment);
       scripts.push(baseProductionUrl + 'fabric-site.js?date=' + date);
     } else {
-      scripts.push.apply(scripts, reactProduction);
       scripts.push(baseProductionUrl + 'fabric-site.min.js?date=' + date);
     }
   }

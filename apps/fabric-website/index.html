@@ -95,6 +95,7 @@
     var devUrl = getParameterByName('devUrl');
 
     if (devUrl) {
+      scripts.push.apply(scripts, reactDevelopment);
       scripts.push(devUrl);
     } else if (isLocal) {
       scripts.push.apply(scripts, reactDevelopment);
