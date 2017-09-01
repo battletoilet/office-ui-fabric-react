@@ -67,19 +67,24 @@ function _extractAnchorLink(path) {
 
 function _onLoad(): void {
 
-  // Load the app into this element.
-  rootElement = rootElement || document.getElementById('main');
-  _getBreakpoint();
+  try {
+    // Load the app into this element.
+    rootElement = rootElement || document.getElementById('main');
+    _getBreakpoint();
 
-  ReactDOM.render(
-    <Fabric>
-      <Router onNewRouteLoaded={ _routerDidMount }>
-        <Route component={ App }>
-          { _getAppRoutes() }
-        </Route>
-      </Router>
-    </Fabric>,
-    rootElement);
+    ReactDOM.render(
+      <Fabric>
+        <Router onNewRouteLoaded={ _routerDidMount }>
+          <Route component={ App }>
+            { _getAppRoutes() }
+          </Route>
+        </Router>
+      </Fabric>,
+      rootElement);
+  }
+  catch (e) {
+    console.log(e, "Error loading fabric website app");
+  }
 }
 
 function _createRoutes(pages: {}[]): {}[] {
