@@ -71,20 +71,25 @@ export class TeachingBubble extends BaseComponent<ITeachingBubbleProps, ITeachin
         }) }
         {...calloutProps}
       >
-        <div className={ css({
-          [styles.animationLayer]: isCoachmark!,
-          ['TeachingBubble-animationLayer']: isCoachmark!
-        }) }
-          onClick={ () => {
-            this.setState({
-              isCoachmarkAnimating: true,
-              isCoachmarkWiggling: false
-            });
-          } } ref={ this._resolveRef('_coachmark') }>
+        <div
+          className={ css({
+            [styles.animationLayer]: isCoachmark!,
+            ['TeachingBubble-animationLayer']: isCoachmark!
+          }) }
+          onClick={ this._onClickHandler }
+          ref={ this._resolveRef('_coachmark') }
+        >
           <TeachingBubbleContent { ...this.props } />
         </div>
       </Callout>
     );
+  }
+
+  private _onClickHandler() {
+    this.setState({
+      isCoachmarkAnimating: true,
+      isCoachmarkWiggling: false
+    });
   }
 
   private _coachmarkOnClickHandler() {
