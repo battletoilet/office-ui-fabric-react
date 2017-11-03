@@ -55,11 +55,11 @@ $borderSize: 1.5px;
   }
 
   .screenReaderOnly {
-    @include ms-u-screenReaderOnly;
+    @include ms-screenReaderOnly;
   }
 }
 
-@media screen and (-ms-high-contrast: active) {
+@include high-contrast {
   .root {
     > .circle {
         border-top-style: none;

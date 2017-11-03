@@ -14,16 +14,18 @@ export class PanelSmallLeftExample extends React.Component<any, any> {
       <div>
         <DefaultButton
           description='Opens the Sample Panel'
+          // tslint:disable-next-line:jsx-no-lambda
           onClick={ () => this.setState({ showPanel: true }) }
           text='Open Panel'
         />
         <Panel
           isOpen={ this.state.showPanel }
           type={ PanelType.smallFixedNear }
+          // tslint:disable-next-line:jsx-no-lambda
           onDismiss={ () => this.setState({ showPanel: false }) }
           headerText='Panel - Small, left-aligned, fixed'
         >
-          <span className='ms-font-m'>Content goes here.</span>
+          <span>Content goes here.</span>
         </Panel>
       </div>
     );

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ChoiceGroup, IChoiceGroupOption } from 'office-ui-fabric-react/lib/ChoiceGroup';
+import { ChoiceGroup } from 'office-ui-fabric-react/lib/ChoiceGroup';
 import { autobind, css } from 'office-ui-fabric-react/lib/Utilities';
 import { Dropdown } from 'office-ui-fabric-react/lib/Dropdown';
 
@@ -23,7 +23,7 @@ export class ChoiceGroupCustomExample extends React.Component<any, any> {
               onRenderField: (props, render) => {
                 return (
                   <div className={ css(styles.root) }>
-                    { render(props) }
+                    { render!(props) }
                     <Dropdown
                       className={ css(styles.dropdown) }
                       defaultSelectedKey='A'

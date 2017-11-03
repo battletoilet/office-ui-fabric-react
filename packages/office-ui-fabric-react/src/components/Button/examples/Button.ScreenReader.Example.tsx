@@ -8,16 +8,16 @@ export class ButtonScreenReaderExample extends React.Component<IButtonProps, {}>
   }
 
   public render() {
-    let { disabled, toggled } = this.props;
+    let { disabled, checked } = this.props;
 
     return (
       <div className='ms-BasicButtonsExample'>
-        <Label>Button with aria description for screen reader</Label>
         <PrimaryButton
           data-automation-id='test'
           disabled={ disabled }
-          toggled={ toggled }
-          ariaDescription='This is aria description used for screen reader.'>
+          checked={ checked }
+          ariaDescription='This is aria description used for screen reader.'
+        >
           Aria Description
         </PrimaryButton>
       </div>

@@ -1,12 +1,13 @@
 /* tslint:disable:no-unused-variable */
 import * as React from 'react';
 /* tslint:enable:no-unused-variable */
+import { ITheme } from '../../Styling';
 
 export interface ILabel {
 
 }
 
-export interface ILabelProps extends React.HTMLProps<HTMLLabelElement> {
+export interface ILabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   /**
    * Optional callback to access the ILabel interface. Use this instead of ref for accessing
    * the public methods and properties of the component.
@@ -18,4 +19,14 @@ export interface ILabelProps extends React.HTMLProps<HTMLLabelElement> {
    * @defaultvalue false
    */
   required?: boolean;
+
+  /**
+   * Renders the label as disabled.
+   */
+  disabled?: boolean;
+
+  /**
+ * Theme provided by HOC.
+ */
+  theme?: ITheme;
 }

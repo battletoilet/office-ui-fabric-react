@@ -13,18 +13,19 @@ export class ButtonAnchorExample extends React.Component<IButtonProps, {}> {
   }
 
   public render() {
-    let { disabled, toggled } = this.props;
+    let { disabled, checked } = this.props;
 
     return (
       <div className='ms-BasicButtonsExample'>
-        <Label>Button like anchor</Label>
         <PrimaryButton
           data-automation-id='test'
           disabled={ disabled }
-          toggled={ toggled }
+          checked={ checked }
           href='http://bing.com'
           target='_blank'
-          title='Let us bing!'>
+          title='Let us bing!'
+          style={ { color: '#ffffff' } }
+        >
           Bing
         </PrimaryButton>
       </div >

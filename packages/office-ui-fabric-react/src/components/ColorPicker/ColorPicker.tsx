@@ -17,6 +17,7 @@ import {
   updateH,
   updateSV
 } from '../../utilities/color/colors';
+import { FontClassNames } from '../../Styling';
 import * as stylesImport from './ColorPicker.scss';
 const styles: any = stylesImport;
 
@@ -26,6 +27,14 @@ export interface IColorPickerState {
 }
 
 export class ColorPicker extends BaseComponent<IColorPickerProps, IColorPickerState> {
+  public static defaultProps = {
+    hexLabel: 'Hex',
+    redLabel: 'Red',
+    greenLabel: 'Green',
+    blueLabel: 'Blue',
+    alphaLabel: 'Alpha'
+  };
+
   private hexText: TextField;
   private rText: TextField;
   private gText: TextField;
@@ -69,15 +78,15 @@ export class ColorPicker extends BaseComponent<IColorPickerProps, IColorPickerSt
               value={ color.a }
               onChanged={ this._onAChanged }
             />) }
-          <table className='ms-ColorPicker-table' cellPadding='0' cellSpacing='0'>
+          <table className={ css('ms-ColorPicker-table', styles.table) } cellPadding='0' cellSpacing='0'>
             <thead>
-              <tr className='ms-font-s'>
-                <td>Hex</td>
-                <td>Red</td>
-                <td>Green</td>
-                <td>Blue</td>
+              <tr className={ FontClassNames.small }>
+                <td className={ styles.tableHexCell }>{ this.props.hexLabel }</td>
+                <td>{ this.props.redLabel }</td>
+                <td>{ this.props.greenLabel }</td>
+                <td>{ this.props.blueLabel }</td>
                 { !this.props.alphaSliderHidden && (
-                  <td>Alpha</td>) }
+                  <td>{ this.props.alphaLabel }</td>) }
               </tr>
             </thead>
             <tbody>
@@ -86,8 +95,9 @@ export class ColorPicker extends BaseComponent<IColorPickerProps, IColorPickerSt
                   <TextField
                     className={ css('ms-ColorPicker-input', styles.input) }
                     value={ color.hex }
-                    ref={ (ref) => this.hexText = ref }
+                    ref={ (ref) => this.hexText = ref! }
                     onBlur={ this._onHexChanged }
+                    spellCheck={ false }
                   />
                 </td>
                 <td style={ { width: '18%' } }>
@@ -95,7 +105,8 @@ export class ColorPicker extends BaseComponent<IColorPickerProps, IColorPickerSt
                     className={ css('ms-ColorPicker-input', styles.input) }
                     onBlur={ this._onRGBAChanged }
                     value={ String(color.r) }
-                    ref={ (ref) => this.rText = ref }
+                    ref={ (ref) => this.rText = ref! }
+                    spellCheck={ false }
                   />
                 </td>
                 <td style={ { width: '18%' } }>
@@ -103,7 +114,8 @@ export class ColorPicker extends BaseComponent<IColorPickerProps, IColorPickerSt
                     className={ css('ms-ColorPicker-input', styles.input) }
                     onBlur={ this._onRGBAChanged }
                     value={ String(color.g) }
-                    ref={ (ref) => this.gText = ref }
+                    ref={ (ref) => this.gText = ref! }
+                    spellCheck={ false }
                   />
                 </td>
                 <td style={ { width: '18%' } }>
@@ -111,7 +123,8 @@ export class ColorPicker extends BaseComponent<IColorPickerProps, IColorPickerSt
                     className={ css('ms-ColorPicker-input', styles.input) }
                     onBlur={ this._onRGBAChanged }
                     value={ String(color.b) }
-                    ref={ (ref) => this.bText = ref }
+                    ref={ (ref) => this.bText = ref! }
+                    spellCheck={ false }
                   />
                 </td>
                 { !this.props.alphaSliderHidden && (
@@ -120,7 +133,8 @@ export class ColorPicker extends BaseComponent<IColorPickerProps, IColorPickerSt
                       className={ css('ms-ColorPicker-input', styles.input) }
                       onBlur={ this._onRGBAChanged }
                       value={ String(color.a) }
-                      ref={ (ref) => this.aText = ref }
+                      ref={ (ref) => this.aText = ref! }
+                      spellCheck={ false }
                     />
                   </td>
                 ) }
@@ -162,7 +176,11 @@ export class ColorPicker extends BaseComponent<IColorPickerProps, IColorPickerSt
     }));
   }
 
-  private _updateColor(newColor: IColor) {
+  private _updateColor(newColor?: IColor) {
+    if (!newColor) {
+      return;
+    }
+
     let { onColorChanged } = this.props;
 
     if (newColor.str !== this.state.color.str) {

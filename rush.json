@@ -1,14 +1,33 @@
 {
-  "npmVersion": "3.10.9",
-  "rushMinimumVersion": "2.5.0",
-  "nodeSupportedVersionRange": ">=6.9.0 <8.0.0",
-  "commonFolder": "common",
+  "npmVersion": "5.0.3",
+  "rushMinimumVersion": "3.0.12",
+  "nodeSupportedVersionRange": ">=6.9.0 <9.0.0",
   "projectFolderMinDepth": 1,
   "projectFolderMaxDepth": 999,
   "projects": [
     {
+      "packageName": "@uifabric/build",
+      "projectFolder": "scripts",
+      "shouldPublish": false
+    },
+    {
       "packageName": "office-ui-fabric-react",
       "projectFolder": "packages/office-ui-fabric-react",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@uifabric/experiments",
+      "projectFolder": "packages/experiments",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@uifabric/merge-styles",
+      "projectFolder": "packages/merge-styles",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@uifabric/jest-serializer-merge-styles",
+      "projectFolder": "packages/jest-serializer-merge-styles",
       "shouldPublish": true
     },
     {
@@ -34,13 +53,18 @@
       ]
     },
     {
-      "packageName": "@uifabric/example-component",
-      "projectFolder": "packages/example-component",
-      "shouldPublish": false
+      "packageName": "@uifabric/icons",
+      "projectFolder": "packages/icons",
+      "shouldPublish": true
     },
     {
       "packageName": "ssr-tests",
       "projectFolder": "apps/ssr-tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "vr-tests",
+      "projectFolder": "apps/vr-tests",
       "shouldPublish": false
     },
     {

@@ -22,17 +22,15 @@ $Callout-smallbeak-slant-width: 16px;
 }
 
 .root {
-  @include ms-baseFont;
-  @include drop-shadow(0,0, 5px, 0px);
+  @include ms-drop-shadow(0,0, 5px, 0px);
   position: absolute;
-  border: 1px solid $ms-color-neutralLight;
   box-sizing: border-box;
+  border: 1px solid $ms-color-neutralLight;
 
-  @media screen and (-ms-high-contrast: active) {
-    border: 1px solid $ms-color-white;
-  }
-  @media screen and (-ms-high-contrast: black-on-white) {
-    border: 1px solid $ms-color-black;
+  @include focus-clear();
+
+  @include high-contrast {
+    border: 1px solid WindowText;
   }
 }
 
@@ -48,6 +46,10 @@ $Callout-smallbeak-slant-width: 16px;
   position: relative;
 }
 
+.overFlowYHidden {
+  overflow-y: hidden;
+}
+
 .beak {
   @include calloutBeak;
 }
@@ -60,4 +62,3 @@ $Callout-smallbeak-slant-width: 16px;
   left: 0;
   background-color: $ms-color-white;
 }
-

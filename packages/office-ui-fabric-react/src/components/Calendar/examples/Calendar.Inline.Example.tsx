@@ -62,16 +62,20 @@ const DayPickerStrings = {
 };
 
 export interface ICalendarInlineExampleState {
-  selectedDate: Date;
-  selectedDateRange: Date[];
+  selectedDate: Date | null;
+  selectedDateRange: Date[] | null;
 }
 
 export interface ICalendarInlineExampleProps {
-  isMonthPickerVisible: boolean;
+  isMonthPickerVisible?: boolean;
   dateRangeType: DateRangeType;
   autoNavigateOnSelection: boolean;
   showGoToToday: boolean;
   showNavigateButtons?: boolean;
+  highlightCurrentMonth?: boolean;
+  isDayPickerVisible?: boolean;
+  showMonthPickerAsOverlay?: boolean;
+  showWeekNumbers?: boolean;
 }
 
 export class CalendarInlineExample extends React.Component<ICalendarInlineExampleProps, ICalendarInlineExampleState> {
@@ -91,16 +95,15 @@ export class CalendarInlineExample extends React.Component<ICalendarInlineExampl
 
   public render() {
     let divStyle: React.CSSProperties = {
-      height: '330px',
-      width: '400px'
+      height: '340px'
     };
 
     let buttonStyle: React.CSSProperties = {
-      margin: '0 10px 0 0'
+      margin: '17px 10px 0 0'
     };
 
-    let dateRangeString: string = null;
-    if (this.state.selectedDateRange != null) {
+    let dateRangeString: string | null = null;
+    if (this.state.selectedDateRange) {
       let rangeStart = this.state.selectedDateRange[0];
       let rangeEnd = this.state.selectedDateRange[this.state.selectedDateRange.length - 1];
       dateRangeString = rangeStart.toLocaleDateString() + '-' + rangeEnd.toLocaleDateString();
@@ -109,11 +112,11 @@ export class CalendarInlineExample extends React.Component<ICalendarInlineExampl
     return (
       <div style={ divStyle }>
         { <div>
-          Selected date(s): <span>{ this.state.selectedDate == null ? 'Not set' : this.state.selectedDate.toLocaleString() }</span>
+          Selected date(s): <span>{ !this.state.selectedDate ? 'Not set' : this.state.selectedDate.toLocaleString() }</span>
         </div> }
         <div>
           Selected dates:
-          <span> { dateRangeString == null ? 'Not set' : dateRangeString }</span>
+          <span> { !dateRangeString ? 'Not set' : dateRangeString }</span>
         </div>
         <Calendar
           onSelectDate={ this._onSelectDate }
@@ -122,11 +125,14 @@ export class CalendarInlineExample extends React.Component<ICalendarInlineExampl
           dateRangeType={ this.props.dateRangeType }
           autoNavigateOnSelection={ this.props.autoNavigateOnSelection }
           showGoToToday={ this.props.showGoToToday }
-          value={ this.state.selectedDate }
+          value={ this.state.selectedDate! }
           firstDayOfWeek={ DayOfWeek.Sunday }
           strings={ DayPickerStrings }
-        >
-        </Calendar>
+          highlightCurrentMonth={ this.props.highlightCurrentMonth }
+          isDayPickerVisible={ this.props.isDayPickerVisible }
+          showMonthPickerAsOverlay={ this.props.showMonthPickerAsOverlay }
+          showWeekNumbers={ this.props.showWeekNumbers }
+        />
         { this.props.showNavigateButtons &&
           <div>
             <DefaultButton style={ buttonStyle } onClick={ this._goPrevious } text='Previous' />
@@ -165,7 +171,7 @@ export class CalendarInlineExample extends React.Component<ICalendarInlineExampl
     this.setState((prevState: ICalendarInlineExampleState) => {
       let selectedDate = prevState.selectedDate || new Date();
       let dateRangeArray = getDateRangeArray(selectedDate, this.props.dateRangeType, DayOfWeek.Sunday);
-      let newSelectedDate = addDays(dateRangeArray.pop(), 1);
+      let newSelectedDate = addDays(dateRangeArray.pop()!, 1);
       return prevState.selectedDate = newSelectedDate;
     });
   }

@@ -8,7 +8,7 @@ export interface ICommandBar {
   focus(): void;
 }
 
-export interface ICommandBarProps extends React.HTMLProps<HTMLDivElement> {
+export interface ICommandBarProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * Optional callback to access the ICommandBar interface. Use this instead of ref for accessing
    * the public methods and properties of the component.
@@ -51,4 +51,12 @@ export interface ICommandBarProps extends React.HTMLProps<HTMLDivElement> {
    * @defaultvalue undefined
    */
   className?: string;
+}
+
+export interface ICommandBarItemProps extends IContextualMenuItem {
+  /**
+   * Remove text when button is not in the overflow
+   * @defaultvalue false
+   */
+  iconOnly?: boolean;
 }

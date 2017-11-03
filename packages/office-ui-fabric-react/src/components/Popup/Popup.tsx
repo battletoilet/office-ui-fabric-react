@@ -28,7 +28,7 @@ export class Popup extends BaseComponent<IPopupProps, {}> {
   private _containsFocus: boolean;
 
   public componentWillMount() {
-    this._originalFocusedElement = getDocument().activeElement as HTMLElement;
+    this._originalFocusedElement = getDocument()!.activeElement as HTMLElement;
   }
 
   public componentDidMount(): void {
@@ -66,7 +66,8 @@ export class Popup extends BaseComponent<IPopupProps, {}> {
         aria-label={ ariaLabel }
         aria-labelledby={ ariaLabelledBy }
         aria-describedby={ ariaDescribedBy }
-        onKeyDown={ this._onKeyDown }>
+        onKeyDown={ this._onKeyDown }
+      >
         { this.props.children }
       </div>
     );

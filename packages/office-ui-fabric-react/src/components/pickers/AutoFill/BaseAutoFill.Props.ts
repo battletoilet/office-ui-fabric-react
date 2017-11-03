@@ -40,11 +40,18 @@ export interface IBaseAutoFill {
   clear(): void;
 }
 
-export interface IBaseAutoFillProps extends React.HTMLProps<HTMLInputElement | BaseAutoFill> {
+export interface IBaseAutoFillProps extends
+  React.InputHTMLAttributes<HTMLInputElement | BaseAutoFill> {
+  /**
+   * Gets the compoonent ref.
+   */
+  componentRef?: (componentRef?: IBaseAutoFill) => void;
+
   /**
    * The suggested autofill value that will display.
    */
   suggestedDisplayValue?: string;
+
   /**
    * A callback for when the current input value changes.
    */
@@ -59,4 +66,31 @@ export interface IBaseAutoFillProps extends React.HTMLProps<HTMLInputElement | B
    */
   enableAutoFillOnKeyPress?: KeyCodes[];
 
+  /**
+   * the default value to be visible
+   */
+  defaultVisibleValue?: string;
+
+  /**
+   * Handler for checking and updating the value if needed
+   *  in componentWillReceiveProps
+   *
+   * @param {IBaseAutoFillProps} defaultVisibleValue - the defaultVisibleValue that got passed
+   *  in to the auto fill's componentWillReceiveProps
+   * @returns {string} - the updated value to set, if needed
+   */
+  updateValueInWillReceiveProps?: () => string | null;
+
+  /**
+   * Handler for checking if the full value of the input should
+   * be seleced in componentDidUpdate
+   *
+   * @returns {boolean} - should the full value of the input be selected?
+   */
+  shouldSelectFullInputValueInComponentDidUpdate?: () => boolean;
+
+  /**
+   * A callback used to modify the input string.
+   */
+  onInputChange?: (value: string) => string;
 }

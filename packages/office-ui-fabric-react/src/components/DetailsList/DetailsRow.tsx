@@ -1,8 +1,10 @@
 import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 import {
   BaseComponent,
   IDisposable,
   assign,
+  autobind,
   css,
   shallowCompare,
   getNativeProps,
@@ -12,21 +14,27 @@ import { IColumn, CheckboxVisibility } from './DetailsList.Props';
 import { DetailsRowCheck, IDetailsRowCheckProps } from './DetailsRowCheck';
 import { GroupSpacer } from '../GroupedList/GroupSpacer';
 import { DetailsRowFields } from './DetailsRowFields';
-import { FocusZone, FocusZoneDirection } from '../../FocusZone';
+import { FocusZone, FocusZoneDirection, IFocusZone } from '../../FocusZone';
 import { ISelection, SelectionMode, SELECTION_CHANGE } from '../../utilities/selection/interfaces';
+import { CollapseAllVisibility } from '../../GroupedList';
 import {
   IDragDropHelper,
   IDragDropEvents,
   IDragDropOptions,
 } from './../../utilities/dragdrop/interfaces';
 import { IViewport } from '../../utilities/decorators/withViewport';
+import { AnimationClassNames } from '../../Styling';
 import * as stylesImport from './DetailsRow.scss';
 const styles: any = stylesImport;
+import * as checkStylesImport from './DetailsRowCheck.scss';
+const checkStyles: any = checkStylesImport;
 
 export interface IDetailsRowProps extends React.Props<DetailsRow> {
+  componentRef?: () => void;
   item: any;
   itemIndex: number;
   columns: IColumn[];
+  compact?: boolean;
   selectionMode: SelectionMode;
   selection: ISelection;
   eventsToRegister?: { eventName: string, callback: (item?: any, index?: number, event?: any) => void }[];
@@ -39,13 +47,15 @@ export interface IDetailsRowProps extends React.Props<DetailsRow> {
   groupNestingDepth?: number;
   viewport?: IViewport;
   checkboxVisibility?: CheckboxVisibility;
+  collapseAllVisibility?: CollapseAllVisibility;
   getRowAriaLabel?: (item: any) => string;
   checkButtonAriaLabel?: string;
+  checkboxCellClassName?: string;
 }
 
 export interface IDetailsRowSelectionState {
   isSelected: boolean;
-  anySelected: boolean;
+  isSelectionModal: boolean;
 }
 
 export interface IDetailsRowState {
@@ -64,21 +74,22 @@ const DEFAULT_DROPPING_CSS_CLASS = 'is-dropping';
 export class DetailsRow extends BaseComponent<IDetailsRowProps, IDetailsRowState> {
   public refs: {
     [key: string]: React.ReactInstance,
-    root: HTMLElement,
     cellMeasurer: HTMLElement
   };
 
+  private _root: HTMLElement | undefined;
+  private _focusZone: IFocusZone;
   private _hasSetFocus: boolean;
   private _droppingClassNames: string;
   private _hasMounted: boolean;
   private _dragDropSubscription: IDisposable;
 
-  constructor(props) {
+  constructor(props: IDetailsRowProps) {
     super(props);
 
     this.state = {
       selectionState: this._getSelectionState(props),
-      columnMeasureInfo: null,
+      columnMeasureInfo: undefined,
       isDropping: false,
       groupNestingDepth: props.groupNestingDepth
     };
@@ -86,14 +97,16 @@ export class DetailsRow extends BaseComponent<IDetailsRowProps, IDetailsRowState
     this._hasSetFocus = false;
 
     this._droppingClassNames = '';
+
     this._updateDroppingState = this._updateDroppingState.bind(this);
+    this._onToggleSelection = this._onToggleSelection.bind(this);
   }
 
   public componentDidMount() {
     let { dragDropHelper } = this.props;
 
     if (dragDropHelper) {
-      this._dragDropSubscription = dragDropHelper.subscribe(this.refs.root, this._events, this._getRowDragDropOptions());
+      this._dragDropSubscription = dragDropHelper.subscribe(this._root as HTMLElement, this._events, this._getRowDragDropOptions());
     }
 
     this._events.on(this.props.selection, SELECTION_CHANGE, this._onSelectionChanged);
@@ -119,7 +132,7 @@ export class DetailsRow extends BaseComponent<IDetailsRowProps, IDetailsRowState
       }
 
       if (this.props.dragDropHelper) {
-        this._dragDropSubscription = this.props.dragDropHelper.subscribe(this.refs.root, this._events, this._getRowDragDropOptions());
+        this._dragDropSubscription = this.props.dragDropHelper.subscribe(this._root as HTMLElement, this._events, this._getRowDragDropOptions());
       }
     }
 
@@ -129,7 +142,7 @@ export class DetailsRow extends BaseComponent<IDetailsRowProps, IDetailsRowState
       columnMeasureInfo.onMeasureDone(newWidth);
 
       this.setState({
-        columnMeasureInfo: null
+        columnMeasureInfo: undefined
       });
     }
 
@@ -173,26 +186,38 @@ export class DetailsRow extends BaseComponent<IDetailsRowProps, IDetailsRowState
       checkboxVisibility,
       getRowAriaLabel,
       checkButtonAriaLabel,
-      selection
+      checkboxCellClassName,
+      selection,
     } = this.props;
-    const { selectionState: { isSelected, anySelected }, columnMeasureInfo, isDropping, groupNestingDepth } = this.state;
+    const { columnMeasureInfo, isDropping, groupNestingDepth } = this.state;
+    const { isSelected = false, isSelectionModal = false } = this.state.selectionState as IDetailsRowSelectionState;
     const isDraggable = Boolean(dragDropEvents && dragDropEvents.canDrag && dragDropEvents.canDrag(item));
     const droppingClassName = isDropping ? (this._droppingClassNames ? this._droppingClassNames : DEFAULT_DROPPING_CSS_CLASS) : '';
     const ariaLabel = getRowAriaLabel ? getRowAriaLabel(item) : null;
-    const canSelect = selection.canSelectItem(item);
+    const canSelect = selection.canSelectItem!(item);
     const isContentUnselectable = selectionMode === SelectionMode.multiple;
+    const showCheckbox = selectionMode !== SelectionMode.none && checkboxVisibility !== CheckboxVisibility.hidden;
 
     return (
-      <div
-        {...getNativeProps(this.props, divProperties)}
-        ref='root'
+      <FocusZone
+        {...getNativeProps(this.props, divProperties) }
+        direction={ FocusZoneDirection.horizontal }
+        ref={ this._onRootRef }
+        componentRef={ this._resolveRef('_focusZone') }
         role='row'
         aria-label={ ariaLabel }
-        className={ css('ms-DetailsRow ms-u-fadeIn400', styles.root, droppingClassName, {
-          ['is-contentUnselectable ' + styles.rootIsContentUnselectable]: isContentUnselectable,
-          ['is-selected ' + styles.rootIsSelected]: isSelected,
-          ['is-check-visible ' + styles.rootIsCheckVisible]: checkboxVisibility === CheckboxVisibility.always
-        }) }
+        className={ css(
+          'ms-DetailsRow',
+          AnimationClassNames.fadeIn400,
+          styles.root,
+          checkStyles.owner,
+          droppingClassName,
+          {
+            [`is-contentUnselectable ${styles.rootIsContentUnselectable}`]: isContentUnselectable,
+            [`is-selected ${checkStyles.isSelected} ${styles.rootIsSelected}`]: isSelected,
+            [`${styles.anySelected} ${checkStyles.anySelected}`]: isSelectionModal,
+            [`is-check-visible ${checkStyles.isVisible}`]: checkboxVisibility === CheckboxVisibility.always
+          }) }
         data-is-focusable={ true }
         data-selection-index={ itemIndex }
         data-item-index={ itemIndex }
@@ -202,43 +227,59 @@ export class DetailsRow extends BaseComponent<IDetailsRowProps, IDetailsRowState
         data-automationid='DetailsRow'
         style={ { minWidth: viewport ? viewport.width : 0 } }
         aria-selected={ isSelected }
+        allowFocusRoot={ true }
       >
-        <FocusZone direction={ FocusZoneDirection.horizontal }>
-          { (selectionMode !== SelectionMode.none && checkboxVisibility !== CheckboxVisibility.hidden) && (
-            <span role='gridcell'>
-              { onRenderCheck({
-                isSelected,
-                anySelected,
-                ariaLabel: checkButtonAriaLabel,
-                canSelect
-              }) }
-            </span>
-          ) }
+        { showCheckbox && (
+          <div
+            role='gridcell'
+            aria-colindex={ 0 }
+            data-selection-toggle={ true }
+            className={ css('ms-DetailsRow-cell', 'ms-DetailsRow-cellCheck', checkStyles.owner, styles.cell, styles.checkCell, checkboxCellClassName) }
+          >
+            { onRenderCheck({
+              selected: isSelected,
+              anySelected: isSelectionModal,
+              title: checkButtonAriaLabel,
+              canSelect: canSelect
+            }) }
+          </div>
+        ) }
 
-          { GroupSpacer({ count: groupNestingDepth }) }
+        { GroupSpacer({ count: groupNestingDepth! - (this.props.collapseAllVisibility === CollapseAllVisibility.hidden ? 1 : 0) }) }
 
-          { item && (
+        { item && (
+          <DetailsRowFields
+            columns={ columns }
+            item={ item }
+            itemIndex={ itemIndex }
+            columnStartIndex={ showCheckbox ? 1 : 0 }
+            onRenderItemColumn={ onRenderItemColumn }
+          />
+        ) }
+
+        { columnMeasureInfo && (
+          <span
+            role='presentation'
+            className={ css('ms-DetailsRow-cellMeasurer ms-DetailsRow-cell', styles.cellMeasurer, styles.cell) }
+            ref='cellMeasurer'
+          >
             <DetailsRowFields
-              columns={ columns }
+              columns={ [columnMeasureInfo.column] }
               item={ item }
               itemIndex={ itemIndex }
-              onRenderItemColumn={ onRenderItemColumn } />
-          ) }
+              columnStartIndex={ (showCheckbox ? 1 : 0) + columns.length }
+              onRenderItemColumn={ onRenderItemColumn }
+            />
+          </span>
+        ) }
 
-          { columnMeasureInfo && (
-            <span
-              className={ css('ms-DetailsRow-cellMeasurer ms-DetailsRow-cell', styles.cellMeasurer, styles.cell) }
-              ref='cellMeasurer'
-            >
-              <DetailsRowFields
-                columns={ [columnMeasureInfo.column] }
-                item={ item }
-                itemIndex={ itemIndex }
-                onRenderItemColumn={ onRenderItemColumn } />
-            </span>
-          ) }
-        </FocusZone>
-      </div>
+        <span
+          role='checkbox'
+          className={ css(styles.checkCover) }
+          aria-checked={ isSelected }
+          data-selection-toggle={ true }
+        />
+      </FocusZone>
     );
   }
 
@@ -265,11 +306,8 @@ export class DetailsRow extends BaseComponent<IDetailsRowProps, IDetailsRowState
     });
   }
 
-  public focus() {
-    if (this.refs && this.refs.root) {
-      this.refs.root.tabIndex = 0;
-      this.refs.root.focus();
-    }
+  public focus(): boolean {
+    return !!this._focusZone && this._focusZone.focus();
   }
 
   protected _onRenderCheck(props: IDetailsRowCheckProps) {
@@ -281,7 +319,7 @@ export class DetailsRow extends BaseComponent<IDetailsRowProps, IDetailsRowState
 
     return {
       isSelected: selection.isIndexSelected(itemIndex),
-      anySelected: selection.getSelectedCount() > 0
+      isSelectionModal: !!selection.isModal && selection.isModal()
     };
   }
 
@@ -292,6 +330,22 @@ export class DetailsRow extends BaseComponent<IDetailsRowProps, IDetailsRowState
       this.setState({
         selectionState: selectionState
       });
+    }
+  }
+
+  private _onToggleSelection() {
+    const { selection } = this.props;
+
+    selection.toggleIndexSelected(this.props.itemIndex);
+  }
+
+  @autobind
+  private _onRootRef(focusZone: FocusZone) {
+    if (focusZone) {
+      // Need to resolve the actual DOM node, not the component. The element itself will be used for drag/drop and focusing.
+      this._root = ReactDOM.findDOMNode(focusZone) as HTMLElement;
+    } else {
+      this._root = undefined;
     }
   }
 
@@ -306,12 +360,12 @@ export class DetailsRow extends BaseComponent<IDetailsRowProps, IDetailsRowState
       eventMap: eventsToRegister,
       selectionIndex: itemIndex,
       context: { data: item, index: itemIndex },
-      canDrag: dragDropEvents.canDrag,
-      canDrop: dragDropEvents.canDrop,
-      onDragStart: dragDropEvents.onDragStart,
+      canDrag: dragDropEvents!.canDrag,
+      canDrop: dragDropEvents!.canDrop,
+      onDragStart: dragDropEvents!.onDragStart,
       updateDropState: this._updateDroppingState,
-      onDrop: dragDropEvents.onDrop,
-      onDragEnd: dragDropEvents.onDragEnd,
+      onDrop: dragDropEvents!.onDrop,
+      onDragEnd: dragDropEvents!.onDragEnd,
     };
 
     return options;
@@ -334,12 +388,12 @@ export class DetailsRow extends BaseComponent<IDetailsRowProps, IDetailsRowState
     let { dragDropEvents, item } = this.props;
 
     if (!newValue) {
-      if (dragDropEvents.onDragLeave) {
-        dragDropEvents.onDragLeave(item, event);
+      if (dragDropEvents!.onDragLeave) {
+        dragDropEvents!.onDragLeave!(item, event);
       }
     } else {
-      if (dragDropEvents.onDragEnter) {
-        this._droppingClassNames = dragDropEvents.onDragEnter(item, event);
+      if (dragDropEvents!.onDragEnter) {
+        this._droppingClassNames = dragDropEvents!.onDragEnter!(item, event);
       }
     }
 

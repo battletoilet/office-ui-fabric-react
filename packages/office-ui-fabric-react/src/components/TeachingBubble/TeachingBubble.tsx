@@ -50,18 +50,20 @@ export class TeachingBubble extends BaseComponent<ITeachingBubbleProps, ITeachin
 
   public render() {
     let { calloutProps, targetElement, isCoachmark } = this.props;
+
     const classes = css(
       'ms-TeachingBubble',
       styles.root,
       {
-        ['ms-TeachingBubble--coachmark']: isCoachmark
+        ['ms-TeachingBubble--coachmark']: isCoachmark!
       }
     );
+
     return (
       <Callout
         className={ classes }
-        targetElement={ targetElement }
         ref={ this._resolveRef('_callout') }
+        target={ targetElement }
         parentClassName={ css({
           [styles.coachmarkCalloutContainer]: isCoachmark,
           [styles.coachmarkIsWiggling]: this.state.isCoachmarkWiggling,
@@ -69,7 +71,10 @@ export class TeachingBubble extends BaseComponent<ITeachingBubbleProps, ITeachin
         }) }
         {...calloutProps}
       >
-        <div className={ css({ [styles.animationLayer]: isCoachmark, ['TeachingBubble-animationLayer']: isCoachmark }) }
+        <div className={ css({
+          [styles.animationLayer]: isCoachmark!,
+          ['TeachingBubble-animationLayer']: isCoachmark!
+        }) }
           onClick={ () => {
             this.setState({
               isCoachmarkAnimating: true,

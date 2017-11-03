@@ -2,7 +2,6 @@
 
 // Element: ms-Link root component
 .root {
-  @include ms-baseFont;
   color: $ms-color-themePrimary;
   margin: 0;
   overflow: inherit;
@@ -39,6 +38,11 @@ button.root {
   cursor: pointer;
   display: inline;
   font-size: inherit; // Ensure that we inherit font size, rather than the browser's default.
+
+  @include high-contrast {
+    // Using Highlight here so we still have a themeable system color that is different from both window text and link text.
+    color: Highlight;
+  }
 }
 
 // Link implemented as an anchor.

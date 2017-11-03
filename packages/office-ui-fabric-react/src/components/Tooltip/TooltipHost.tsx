@@ -19,7 +19,7 @@ import * as stylesImport from './TooltipHost.scss';
 const styles: any = stylesImport;
 
 export interface ITooltipHostState {
-  isTooltipVisible?: boolean;
+  isTooltipVisible: boolean;
 }
 
 export class TooltipHost extends BaseComponent<ITooltipHostProps, ITooltipHostState> {
@@ -47,8 +47,10 @@ export class TooltipHost extends BaseComponent<ITooltipHostProps, ITooltipHostSt
       content,
       children,
       directionalHint,
+      directionalHintForRTL,
       delay,
       id,
+      setAriaDescribedBy = true,
       hostClassName
     } = this.props;
     const { isTooltipVisible } = this.state;
@@ -61,21 +63,21 @@ export class TooltipHost extends BaseComponent<ITooltipHostProps, ITooltipHostSt
         { ...{ onBlurCapture: this._onTooltipMouseLeave } }
         onMouseEnter={ this._onTooltipMouseEnter }
         onMouseLeave={ this._onTooltipMouseLeave }
-        aria-describedby={ isTooltipVisible ? tooltipId : undefined }
+        aria-describedby={ setAriaDescribedBy && isTooltipVisible && content ? tooltipId : undefined }
       >
         { children }
         { isTooltipVisible && (
           <Tooltip
-            { ...tooltipProps }
             id={ tooltipId }
             delay={ delay }
             content={ content }
             targetElement={ this._getTargetElement() }
             directionalHint={ directionalHint }
+            directionalHintForRTL={ directionalHintForRTL }
             calloutProps={ assign(calloutProps, { onDismiss: this._onTooltipCallOutDismiss }) }
             { ...getNativeProps(this.props, divProperties) }
-          >
-          </Tooltip>
+            { ...tooltipProps }
+          />
         ) }
       </div>
     );
@@ -89,7 +91,7 @@ export class TooltipHost extends BaseComponent<ITooltipHostProps, ITooltipHostSt
     if (overflowMode !== undefined) {
       switch (overflowMode) {
         case TooltipOverflowMode.Parent:
-          return this._tooltipHost.parentElement;
+          return this._tooltipHost.parentElement!;
 
         case TooltipOverflowMode.Self:
           return this._tooltipHost;
@@ -111,24 +113,25 @@ export class TooltipHost extends BaseComponent<ITooltipHostProps, ITooltipHostSt
       }
     }
 
-    this.setState({
-      isTooltipVisible: true
-    });
+    this._toggleTooltip(true);
   }
 
   // Hide Tooltip
   @autobind
   private _onTooltipMouseLeave(ev: any) {
-    this.setState({
-      isTooltipVisible: false
-    });
+    this._toggleTooltip(false);
   }
 
   // Hide Tooltip
   @autobind
   private _onTooltipCallOutDismiss() {
-    this.setState({
-      isTooltipVisible: false
-    });
+    this._toggleTooltip(false);
+  }
+
+  private _toggleTooltip(isTooltipVisible: boolean) {
+    this.setState(
+      { isTooltipVisible },
+      () => this.props.onTooltipToggle &&
+        this.props.onTooltipToggle(this.state.isTooltipVisible));
   }
 }

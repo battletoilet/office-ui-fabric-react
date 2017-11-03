@@ -5,6 +5,7 @@ import { ICalloutProps } from './Callout.Props';
 import { DirectionalHint } from '../../common/DirectionalHint';
 import {
   BaseComponent,
+  IPoint,
   IRectangle,
   assign,
   autobind,
@@ -14,9 +15,11 @@ import {
   getWindow,
   getDocument
 } from '../../Utilities';
-import { getRelativePositions, IPositionInfo, IPositionProps, getMaxHeight } from '../../utilities/positioning';
+import { getRelativePositions, IPositionInfo, IPositionProps, getMaxHeight, ICalloutPositon } from '../../utilities/positioning';
 import { Popup } from '../../Popup';
 import * as stylesImport from './Callout.scss';
+import { AnimationClassNames, mergeStyles } from '../../Styling';
+
 const styles: any = stylesImport;
 
 const BEAK_ORIGIN_POSITION = { top: 0, left: 0 };
@@ -27,6 +30,7 @@ export interface ICalloutState {
   positions?: IPositionInfo;
   slideDirectionalClassName?: string;
   calloutElementRect?: ClientRect;
+  heightOffset?: number;
 }
 
 export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> {
@@ -45,9 +49,10 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
   private _calloutElement: HTMLDivElement;
   private _targetWindow: Window;
   private _bounds: IRectangle;
-  private _maxHeight: number;
+  private _maxHeight: number | undefined;
   private _positionAttempts: number;
-  private _target: HTMLElement | MouseEvent;
+  private _target: HTMLElement | MouseEvent | IPoint | null;
+  private _setHeightOffsetTimer: number;
 
   constructor(props: ICalloutProps) {
     super(props);
@@ -56,33 +61,40 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
 
     this._didSetInitialFocus = false;
     this.state = {
-      positions: null,
-      slideDirectionalClassName: null,
-      calloutElementRect: null
+      positions: undefined,
+      slideDirectionalClassName: undefined,
+      calloutElementRect: undefined,
+      heightOffset: 0
     };
     this._positionAttempts = 0;
   }
 
   public componentDidUpdate() {
     this._setInitialFocus();
-    this._updatePosition();
+    this._updateAsyncPosition();
   }
 
   public componentWillMount() {
-    let target = this.props.targetElement ? this.props.targetElement : this.props.target;
-    this._setTargetWindowAndElement(target);
+    this._setTargetWindowAndElement(this._getTarget());
   }
 
   public componentWillUpdate(newProps: ICalloutProps) {
-    if (newProps.targetElement !== this.props.targetElement || newProps.target !== this.props.target) {
-      let newTarget = newProps.targetElement ? newProps.targetElement : newProps.target;
+    // If the target element changed, find the new one. If we are tracking target with class name, always find element because we do not know if fabric has rendered a new element and disposed the old element.
+    let newTarget = this._getTarget(newProps);
+    let oldTarget = this._getTarget();
+    if (newTarget !== oldTarget || typeof (newTarget) === 'string' || newTarget instanceof String) {
       this._maxHeight = undefined;
-      this._setTargetWindowAndElement(newTarget);
+      this._setTargetWindowAndElement(newTarget!);
     }
     if (newProps.gapSpace !== this.props.gapSpace || this.props.beakWidth !== newProps.beakWidth) {
       this._maxHeight = undefined;
     }
+
+    if (newProps.finalHeight !== this.props.finalHeight) {
+      this._setHeightOffsetEveryFrame();
+    }
   }
+
   public componentDidMount() {
     this._onComponentDidMount();
   }
@@ -99,13 +111,16 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
       ariaLabelledBy,
       className,
       target,
-      targetElement,
       isBeakVisible,
       beakStyle,
       children,
       beakWidth,
+      parentClassName,
+      calloutWidth,
+      finalHeight,
       backgroundColor,
-      parentClassName } = this.props;
+      calloutMaxHeight } = this.props;
+    target = this._getTarget();
     let { positions } = this.state;
     let beakStyleWidth = beakWidth;
 
@@ -116,28 +131,38 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
     }
 
     let beakReactStyle: React.CSSProperties = {
-      top: positions && positions.beakPosition ? positions.beakPosition.top : BEAK_ORIGIN_POSITION.top,
-      left: positions && positions.beakPosition ? positions.beakPosition.left : BEAK_ORIGIN_POSITION.left,
-      height: beakStyleWidth,
-      width: beakStyleWidth,
-      backgroundColor: backgroundColor,
+      ...(positions && positions.beakPosition ? positions.beakPosition.position : null),
     };
+    beakReactStyle.height = beakStyleWidth;
+    beakReactStyle.width = beakStyleWidth;
+    beakReactStyle.backgroundColor = backgroundColor;
+    if (!beakReactStyle.top && !beakReactStyle.bottom && !beakReactStyle.left && !beakReactStyle.right) {
+      beakReactStyle.left = BEAK_ORIGIN_POSITION.left;
+      beakReactStyle.top = BEAK_ORIGIN_POSITION.top;
+    }
+    let directionalClassName = (positions && positions.directionalClassName)
+      ? (AnimationClassNames as any)[positions.directionalClassName]
+      : '';
 
-    let directionalClassName = positions && positions.directionalClassName ? `ms-u-${positions.directionalClassName}` : '';
+    let getContentMaxHeight: number = this._getMaxHeight() + this.state.heightOffset!;
+    let contentMaxHeight: number = calloutMaxHeight! && (calloutMaxHeight! < getContentMaxHeight) ? calloutMaxHeight! : getContentMaxHeight!;
 
-    let contentMaxHeight: number = this._getMaxHeight();
-    let beakVisible: boolean = isBeakVisible && (!!targetElement || !!target);
+    let beakVisible = isBeakVisible && (!!target);
+
     let content = (
       <div ref={ this._resolveRef('_hostElement') } className={ css('ms-Callout-container', styles.container, parentClassName) }>
         <div
           className={
-            css(
+            mergeStyles(
               'ms-Callout',
               styles.root,
               className,
-              directionalClassName
+              directionalClassName,
+              !!calloutWidth && { width: calloutWidth }
             ) }
           style={ positions ? positions.calloutPosition : OFF_SCREEN_STYLE }
+          tabIndex={ -1 } // Safari and Firefox on Mac OS requires this to back-stop click events so focus remains in the Callout.
+          // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button#Clicking_and_focus
           ref={ this._resolveRef('_calloutElement') }
         >
 
@@ -154,10 +179,13 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
             ariaLabel={ ariaLabel }
             ariaDescribedBy={ ariaDescribedBy }
             ariaLabelledBy={ ariaLabelledBy }
-            className={ css('ms-Callout-main', styles.main) }
+            className={ css('ms-Callout-main', styles.main, {
+              [styles.overFlowYHidden]: !!finalHeight
+            }) }
             onDismiss={ this.dismiss }
             shouldRestoreFocus={ true }
-            style={ { maxHeight: contentMaxHeight, backgroundColor: backgroundColor } }>
+            style={ { maxHeight: contentMaxHeight, backgroundColor: backgroundColor } }
+          >
             { children }
           </Popup>
         </div>
@@ -215,33 +243,31 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
     this._async.setTimeout(() => {
       this._events.on(this._targetWindow, 'scroll', this._dismissOnScroll, true);
       this._events.on(this._targetWindow, 'resize', this.dismiss, true);
-      this._events.on(this._targetWindow, 'focus', this._dismissOnLostFocus, true);
-      this._events.on(this._targetWindow, 'click', this._dismissOnLostFocus, true);
+      this._events.on(this._targetWindow.document.body, 'focus', this._dismissOnLostFocus, true);
+      this._events.on(this._targetWindow.document.body, 'click', this._dismissOnLostFocus, true);
     }, 0);
 
     if (this.props.onLayerMounted) {
       this.props.onLayerMounted();
     }
 
-    this._updatePosition();
+    this._updateAsyncPosition();
+    this._setHeightOffsetEveryFrame();
   }
-
+  private _updateAsyncPosition() {
+    this._async.requestAnimationFrame(() => this._updatePosition());
+  }
   private _updatePosition() {
     let { positions } = this.state;
     let hostElement: HTMLElement = this._hostElement;
     let calloutElement: HTMLElement = this._calloutElement;
 
     if (hostElement && calloutElement) {
-      let currentProps: IPositionProps;
+      let currentProps: IPositionProps | undefined;
       currentProps = assign(currentProps, this.props);
-      currentProps.bounds = this._getBounds();
-      // Temporary to be removed when targetElement is removed. Currently deprecated.
-      if (this.props.targetElement) {
-        currentProps.targetElement = this._target as HTMLElement;
-      } else {
-        currentProps.target = this._target;
-      }
-      let newPositions: IPositionInfo = getRelativePositions(currentProps, hostElement, calloutElement);
+      currentProps!.bounds = this._getBounds();
+      currentProps!.target = this._target!;
+      let newPositions: IPositionInfo = getRelativePositions(currentProps!, hostElement, calloutElement);
 
       // Set the new position only when the positions are not exists or one of the new callout positions are different.
       // The position should not change if the position is within 2 decimal places.
@@ -269,12 +295,12 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
 
       if (!currentBounds) {
         currentBounds = {
-          top: 0 + this.props.minPagePadding,
-          left: 0 + this.props.minPagePadding,
-          right: this._targetWindow.innerWidth - this.props.minPagePadding,
-          bottom: this._targetWindow.innerHeight - this.props.minPagePadding,
-          width: this._targetWindow.innerWidth - this.props.minPagePadding * 2,
-          height: this._targetWindow.innerHeight - this.props.minPagePadding * 2
+          top: 0 + this.props.minPagePadding!,
+          left: 0 + this.props.minPagePadding!,
+          right: this._targetWindow.innerWidth - this.props.minPagePadding!,
+          bottom: this._targetWindow.innerHeight - this.props.minPagePadding!,
+          width: this._targetWindow.innerWidth - this.props.minPagePadding! * 2,
+          height: this._targetWindow.innerHeight - this.props.minPagePadding! * 2
         };
       }
       this._bounds = currentBounds;
@@ -287,48 +313,83 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
       if (this.props.directionalHintFixed && this._target) {
         let beakWidth = this.props.isBeakVisible ? this.props.beakWidth : 0;
         let gapSpace = this.props.gapSpace ? this.props.gapSpace : 0;
-        this._maxHeight = getMaxHeight(this._target, this.props.directionalHint, beakWidth + gapSpace, this._getBounds());
+        this._maxHeight = getMaxHeight(this._target, this.props.directionalHint!, beakWidth! + gapSpace, this._getBounds());
       } else {
-        this._maxHeight = this._getBounds().height - BORDER_WIDTH * 2;
+        this._maxHeight = this._getBounds().height! - BORDER_WIDTH * 2;
       }
     }
-    return this._maxHeight;
+    return this._maxHeight!;
   }
 
   private _arePositionsEqual(positions: IPositionInfo, newPosition: IPositionInfo) {
-    if (positions.calloutPosition.top.toFixed(2) !== newPosition.calloutPosition.top.toFixed(2)) {
-      return false;
-    }
-    if (positions.calloutPosition.left.toFixed(2) !== newPosition.calloutPosition.left.toFixed(2)) {
-      return false;
-    }
-    if (positions.beakPosition.top.toFixed(2) !== newPosition.beakPosition.top.toFixed(2)) {
-      return false;
-    }
-    if (positions.beakPosition.top.toFixed(2) !== newPosition.beakPosition.top.toFixed(2)) {
-      return false;
-    }
-
-    return true;
-
+    return this._comparePositions(positions.calloutPosition, newPosition.calloutPosition) &&
+      this._comparePositions(positions.beakPosition.position, newPosition.beakPosition.position);
   }
 
-  private _setTargetWindowAndElement(target: HTMLElement | string | MouseEvent): void {
+  private _comparePositions(oldPositions: ICalloutPositon, newPositions: ICalloutPositon) {
+    for (const key in newPositions) {
+      // This needs to be checked here and below because there is a linting error if for in does not immediately have an if statement
+      if (newPositions.hasOwnProperty(key)) {
+        const oldPositionEdge = oldPositions[key];
+        const newPositionEdge = newPositions[key];
+
+        if (oldPositionEdge !== undefined && newPositionEdge !== undefined) {
+          if (oldPositionEdge.toFixed(2) !== newPositionEdge.toFixed(2)) {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  private _setTargetWindowAndElement(target: HTMLElement | string | MouseEvent | IPoint | null): void {
     if (target) {
       if (typeof target === 'string') {
-        let currentDoc: Document = getDocument();
+        let currentDoc: Document = getDocument()!;
         this._target = currentDoc ? currentDoc.querySelector(target) as HTMLElement : null;
-        this._targetWindow = getWindow();
+        this._targetWindow = getWindow()!;
       } else if ((target as MouseEvent).stopPropagation) {
+        this._targetWindow = getWindow((target as MouseEvent).toElement as HTMLElement)!;
         this._target = target;
-        this._targetWindow = getWindow((target as MouseEvent).toElement as HTMLElement);
+      } else if ((target as IPoint).x !== undefined && (target as IPoint).y !== undefined) {
+        this._targetWindow = getWindow()!;
+        this._target = target;
       } else {
         let targetElement: HTMLElement = target as HTMLElement;
+        this._targetWindow = getWindow(targetElement)!;
         this._target = target;
-        this._targetWindow = getWindow(targetElement);
       }
     } else {
-      this._targetWindow = getWindow();
+      this._targetWindow = getWindow()!;
     }
+  }
+
+  private _setHeightOffsetEveryFrame(): void {
+    if (this._calloutElement && this.props.finalHeight) {
+      this._setHeightOffsetTimer = this._async.requestAnimationFrame(() => {
+        const calloutMainElem = this._calloutElement.lastChild as HTMLElement;
+        const cardScrollHeight: number = calloutMainElem.scrollHeight;
+        const cardCurrHeight: number = calloutMainElem.offsetHeight;
+        const scrollDiff: number = cardScrollHeight - cardCurrHeight;
+
+        this.setState({
+          heightOffset: this.state.heightOffset! + scrollDiff
+        });
+
+        if (calloutMainElem.offsetHeight < this.props.finalHeight!) {
+          this._setHeightOffsetEveryFrame();
+        } else {
+          this._async.cancelAnimationFrame(this._setHeightOffsetTimer);
+        }
+      });
+    }
+  }
+
+  private _getTarget(props: ICalloutProps = this.props): HTMLElement | string | MouseEvent | IPoint | null {
+    let { useTargetPoint, targetPoint, target } = props;
+    return useTargetPoint ? targetPoint! : target!;
   }
 }

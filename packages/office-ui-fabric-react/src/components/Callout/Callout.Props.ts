@@ -4,7 +4,7 @@ import { CalloutContent } from './CalloutContent';
 import { DirectionalHint } from '../../common/DirectionalHint';
 import {
   IPoint,
-  IRectangle
+  IRectangle,
 } from '../../Utilities';
 
 export interface ICallout {
@@ -23,13 +23,19 @@ export interface ICalloutProps extends React.Props<Callout | CalloutContent> {
    * It can be either an HTMLElement a querySelector string of a valid HTMLElement
    * or a MouseEvent. If MouseEvent is given then the origin point of the event will be used.
    */
-  target?: HTMLElement | string | MouseEvent;
+  target?: HTMLElement | string | MouseEvent | IPoint | null;
 
   /**
    * How the element should be positioned
    * @default DirectionalHint.BottomAutoEdge
    */
   directionalHint?: DirectionalHint;
+
+  /**
+   * How the element should be positioned in RTL layouts.
+   * If not specified, a mirror of `directionalHint` will be used instead
+   */
+  directionalHintForRTL?: DirectionalHint;
 
   /**
    * The gap between the Callout and the target
@@ -42,6 +48,12 @@ export interface ICalloutProps extends React.Props<Callout | CalloutContent> {
    * @default 16
    */
   beakWidth?: number;
+
+  /**
+   * Custom width for callout including borders. If value is 0, no width is applied.
+   * @default 0
+   */
+  calloutWidth?: number;
 
   /**
    * The background color of the Callout in hex format ie. #ffffff.
@@ -63,17 +75,19 @@ export interface ICalloutProps extends React.Props<Callout | CalloutContent> {
   /**
    * If true use a point rather than rectangle to position the Callout.
    * For example it can be used to position based on a click.
+   * @deprecated Use 'target' instead
    */
   useTargetPoint?: boolean;
 
   /**
    * Point used to position the Callout
+   * @deprecated Use 'target' instead
    */
   targetPoint?: IPoint;
 
   /**
    * If true then the beak is visible. If false it will not be shown.
-   * @default false
+   * @default true
    */
   isBeakVisible?: boolean;
 
@@ -144,6 +158,12 @@ export interface ICalloutProps extends React.Props<Callout | CalloutContent> {
   directionalHintFixed?: boolean;
 
   /**
+   * Specify the final height of the content.
+   * To be used when expanding the content dynamically so that callout can adjust its position.
+   */
+  finalHeight?: number;
+
+  /**
    * If true then the callout will attempt to focus the first focusable element that it contains.
    * If it doesn't find an element, no focus will be set and the method will return false.
    * This means that it's the contents responsibility to either set focus or have
@@ -159,8 +179,8 @@ export interface ICalloutProps extends React.Props<Callout | CalloutContent> {
   beakStyle?: string;
 
   /**
-   * Deprecated at v0.72.1 and will no longer exist after 1.0 use target instead.
-   * @deprecated
+   * Set max height of callout
+   * When not set the callout will expand with contents up to the bottom of the screen
    */
   targetElement?: HTMLElement;
 
@@ -168,4 +188,5 @@ export interface ICalloutProps extends React.Props<Callout | CalloutContent> {
    * Classnames for the parent element
    */
   parentClassName?: string;
+  calloutMaxHeight?: number;
 }

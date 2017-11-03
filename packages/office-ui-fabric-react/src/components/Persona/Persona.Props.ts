@@ -6,7 +6,7 @@ export interface IPersona {
 
 }
 
-export interface IPersonaProps extends React.HTMLProps<Persona> {
+export interface IPersonaProps extends React.HTMLAttributes<Persona> {
   /**
    * Optional callback to access the IPersona interface. Use this instead of ref for accessing
    * the public methods and properties of the component.
@@ -25,7 +25,7 @@ export interface IPersonaProps extends React.HTMLProps<Persona> {
 
   /**
    * Decides the size of the control.
-   * @defaultvalue PersonaSize.regular
+   * @defaultvalue PersonaSize.size48
    */
   size?: PersonaSize;
 
@@ -45,6 +45,11 @@ export interface IPersonaProps extends React.HTMLProps<Persona> {
    * Url to the image to use, should be a square aspect ratio and big enough to fit in the image area.
    */
   imageUrl?: string;
+
+  /**
+   * Alt text for the image to use. Defaults to an empty string.
+   */
+  imageAlt?: string;
 
   /**
    * The user's initials to display in the image area when there is no image.
@@ -108,17 +113,69 @@ export interface IPersonaProps extends React.HTMLProps<Persona> {
    * Additional CSS class(es) to apply to the Persona
    */
   className?: string;
+
+  /*
+   * If true, show the secondary text line regardless of the size of the persona
+   */
+  showSecondaryText?: boolean;
+
+  /**
+   * Optional custom persona coin size in pixel.
+   */
+  coinSize?: number;
+
+  /**
+   * Optional HTML element props for Persona coin.
+   */
+  coinProps?: React.HTMLAttributes<HTMLDivElement>;
 }
 
 export enum PersonaSize {
+  /**
+   * tiny size has been deprecated in favor of standardized numeric sizing. Use size12 instead.
+   * @deprecated
+   */
   tiny = 0,
+  /**
+   *
+   * extraExtraSmall size has been deprecated in favor of standardized numeric sizing. Use size24 instead.
+   * @deprecated
+   */
   extraExtraSmall = 1,
+  /**
+   * extraSmall size has been deprecated in favor of standardized numeric sizing. Use size32 instead.
+   * @deprecated
+   */
   extraSmall = 2,
+  /**
+   * small size has been deprecated in favor of standardized numeric sizing. Use size40 instead.
+   * @deprecated
+   */
   small = 3,
+  /**
+   * regular size has been deprecated in favor of standardized numeric sizing. Use size48 instead.
+   * @deprecated
+   */
   regular = 4,
+  /**
+   * large size has been deprecated in favor of standardized numeric sizing. Use size72 instead.
+   * @deprecated
+   */
   large = 5,
+  /**
+   * extraLarge size has been deprecated in favor of standardized numeric sizing. Use size100 instead.
+   * @deprecated
+   */
   extraLarge = 6,
-  size28 = 7
+  size28 = 7,
+  size16 = 8,
+  size12 = 9,
+  size24 = 10,
+  size32 = 11,
+  size40 = 12,
+  size48 = 13,
+  size72 = 14,
+  size100 = 15
 }
 
 export enum PersonaPresence {
@@ -145,6 +202,14 @@ export enum PersonaInitialsColor {
   purple = 10,
   black = 11,
   orange = 12,
+  /**
+   * Red is a color that often has a special meaning, so it is considered a reserved color and can only be set with overrides
+   */
   red = 13,
-  darkRed = 14
+  darkRed = 14,
+  /**
+   * Tranparent is not intended to be used with typical initials due to accessibility issues.
+   * Its primary use is for overflow buttons, so it is considered a reserved color and can only be set with overrides.
+   */
+  transparent = 15,
 }

@@ -1,70 +1,29 @@
-import * as React from 'react';
 import { IRenderFunction } from '../../Utilities';
-import { Dropdown } from './Dropdown';
-import { ICalloutProps } from '../../Callout';
+import { ISelectableOption } from '../../utilities/selectableOption/SelectableOption.Props';
+import { ISelectableDroppableTextProps } from '../../utilities/selectableOption/SelectableDroppableText.Props';
+import { ResponsiveMode } from '../../utilities/decorators/withResponsiveMode';
 
-export enum DropdownMenuItemType {
-  Normal = 0,
-  Divider = 1,
-  Header = 2
-}
+export { SelectableOptionMenuItemType as DropdownMenuItemType } from '../../utilities/selectableOption/SelectableOption.Props';
 
 export interface IDropdown {
-
+  focus: () => void;
 }
 
-export interface IDropdownProps extends React.Props<Dropdown> {
-  /**
-   * Optional callback to access the IDropdown interface. Use this instead of ref for accessing
-   * the public methods and properties of the component.
-   */
-  componentRef?: (component: IDropdown) => void;
-
-  /**
-   * Descriptive label for the Dropdown
-   */
-  label?: string;
-
+export interface IDropdownProps extends ISelectableDroppableTextProps<HTMLDivElement> {
   /**
    * Input placeholder text. Displayed until option is selected.
    */
   placeHolder?: string;
 
   /**
-  * Aria Label for the Dropdown for screen reader users.
-  */
-  ariaLabel?: string;
-
-  /**
-  * Id of the drop down
-  */
-  id?: string;
-
-  /**
-   * If provided, additional class name to provide on the root element.
-   */
-  className?: string;
-
-  /**
-   * The key that will be initially used to set a selected item.
-   */
-  defaultSelectedKey?: string | number;
-
-  /**
-   * The key of the selected item. If you provide this, you must maintain selection
-   * state by observing onChange events and passing a new value in when changed.
-   */
-  selectedKey?: string | number;
-
-  /**
-   * Collection of options for this Dropdown
-   */
-  options?: IDropdownOption[];
-
-  /**
    * Callback issues when the selected option changes
    */
   onChanged?: (option: IDropdownOption, index?: number) => void;
+
+  /**
+   * Callback issues when the options callout is dismissed
+   */
+  onDismiss?: () => void;
 
   /**
    * Optional custom renderer for placeholder text
@@ -74,78 +33,57 @@ export interface IDropdownProps extends React.Props<Dropdown> {
   /**
    * Optional custom renderer for selected option displayed in input
    */
-  onRenderTitle?: IRenderFunction<IDropdownOption>;
+  onRenderTitle?: IRenderFunction<IDropdownOption | IDropdownOption[]>;
 
   /**
-    * Optional custom renderer for the dropdown container
-    */
-  onRenderContainer?: IRenderFunction<IDropdownProps>;
-
-  /**
-    * Optional custom renderer for the dropdown list
-    */
-  onRenderList?: IRenderFunction<IDropdownProps>;
-
-  /**
-   * Optional custom renderer for the dropdown options
+   * Optional custom renderer for chevron icon
    */
-  onRenderItem?: IRenderFunction<IDropdownOption>;
+  onRenderCaretDown?: IRenderFunction<IDropdownProps>;
 
   /**
-   * Optional custom renderer for the dropdown option content
+   * Custom width for dropdown. If value is 0, width of the input field is used.
+   * @default 0
    */
-  onRenderOption?: IRenderFunction<IDropdownOption>;
+  dropdownWidth?: number;
+
+  responsiveMode?: ResponsiveMode;
 
   /**
-   * Whether or not the Dropdown is disabled.
+   * Optional mode indicates if multi-choice selections is allowed.  Default to false
    */
-  disabled?: boolean;
+  multiSelect?: boolean;
 
   /**
-   * Whether or not the Dropdown is required.
+   * Keys that will be initially used to set selected items.
    */
-  required?: boolean;
+  defaultSelectedKeys?: string[] | number[];
 
   /**
-   * Custom properties for Dropdown's Callout used to render options.
+  * Keys of the selected items. If you provide this, you must maintain selection
+  * state by observing onChange events and passing a new value in when changed.
+  */
+  selectedKeys?: string[] | number[];
+
+  /**
+   * When multiple items are selected, this still will be used to separate values in
+   * the dropdown title.
+   *
+   * @defaultValue ", "
    */
-  calloutProps?: ICalloutProps;
+  multiSelectDelimiter?: string;
 
   /**
    * Deprecated at v0.52.0, use 'disabled' instead.
    * @deprecated
    */
   isDisabled?: boolean;
-
-  /**
-   * Descriptive label for the Dropdown Error Message
-   */
-  errorMessage?: string;
 }
 
-export interface IDropdownOption {
+export interface IDropdownOption extends ISelectableOption {
   /**
-   * Arbitrary string associated with this option.
+   * Data available to custom onRender functions.
    */
-  key: string | number;
-
-  /**
-   * Text to render for this option
-   */
-  text: string;
-
-  /**
-   * Text to render for this option
-   */
-  itemType?: DropdownMenuItemType;
-
-  /**
-   * Index for this option
-   */
-  index?: number;
-
-  /** If option is selected. */
-  selected?: boolean;
+  data?: any;
 
   /**
    * Deprecated at v.65.1, use 'selected' instead.

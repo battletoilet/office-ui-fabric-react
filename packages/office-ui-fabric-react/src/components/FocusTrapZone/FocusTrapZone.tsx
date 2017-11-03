@@ -7,7 +7,7 @@ import {
   getNativeProps,
   divProperties,
   getFirstFocusable,
-  getLastFocusable,
+  getLastTabbable,
   getNextElement
 } from '../../Utilities';
 import { IFocusTrapZone, IFocusTrapZoneProps } from './FocusTrapZone.Props';
@@ -39,10 +39,9 @@ export class FocusTrapZone extends BaseComponent<IFocusTrapZoneProps, {}> implem
   }
 
   public componentDidMount() {
-    let { elementToFocusOnDismiss, isClickableOutsideFocusTrap = false, forceFocusInsideTrap = true } = this.props;
+    let { isClickableOutsideFocusTrap = false, forceFocusInsideTrap = true, elementToFocusOnDismiss } = this.props;
 
     this._previouslyFocusedElement = elementToFocusOnDismiss ? elementToFocusOnDismiss : document.activeElement as HTMLElement;
-
     if (!elementContains(this.refs.root, this._previouslyFocusedElement)) {
       this.focus();
     }
@@ -53,6 +52,13 @@ export class FocusTrapZone extends BaseComponent<IFocusTrapZoneProps, {}> implem
 
     if (!isClickableOutsideFocusTrap) {
       this._events.on(window, 'click', this._forceClickInTrap, true);
+    }
+  }
+
+  public componentWillReceiveProps(nextProps: IFocusTrapZoneProps) {
+    let { elementToFocusOnDismiss } = nextProps;
+    if (elementToFocusOnDismiss && this._previouslyFocusedElement !== elementToFocusOnDismiss) {
+      this._previouslyFocusedElement = elementToFocusOnDismiss;
     }
   }
 
@@ -87,7 +93,8 @@ export class FocusTrapZone extends BaseComponent<IFocusTrapZoneProps, {}> implem
         className={ className }
         ref='root'
         aria-labelledby={ ariaLabelledBy }
-        onKeyDown={ this._onKeyboardHandler }>
+        onKeyDown={ this._onKeyboardHandler }
+      >
         { this.props.children }
       </div>
     );
@@ -97,17 +104,21 @@ export class FocusTrapZone extends BaseComponent<IFocusTrapZoneProps, {}> implem
    * Need to expose this method in case of popups since focus needs to be set when popup is opened
    */
   public focus() {
-    let { firstFocusableSelector } = this.props;
+    const { firstFocusableSelector } = this.props;
+    const focusSelector = typeof firstFocusableSelector === 'string'
+      ? firstFocusableSelector
+      : firstFocusableSelector && firstFocusableSelector();
+
     let _firstFocusableChild;
     let root = this.refs.root;
 
-    if (firstFocusableSelector) {
-      _firstFocusableChild = root.querySelector('.' + firstFocusableSelector);
+    if (focusSelector) {
+      _firstFocusableChild = root.querySelector('.' + focusSelector);
     } else {
       _firstFocusableChild = getNextElement(root, root.firstChild as HTMLElement, true, false, false, true);
     }
     if (_firstFocusableChild) {
-      _firstFocusableChild.focus();
+      (_firstFocusableChild as any).focus();
     }
   }
 
@@ -120,14 +131,14 @@ export class FocusTrapZone extends BaseComponent<IFocusTrapZoneProps, {}> implem
     let { root } = this.refs;
 
     const _firstFocusableChild = getFirstFocusable(root, root.firstChild as HTMLElement, true);
-    const _lastFocusableChild = getLastFocusable(root, root.lastChild as HTMLElement, true);
+    const _lastFocusableChild = getLastTabbable(root, root.lastChild as HTMLElement, true);
 
     if (ev.shiftKey && _firstFocusableChild === ev.target) {
-      _lastFocusableChild.focus();
+      _lastFocusableChild!.focus();
       ev.preventDefault();
       ev.stopPropagation();
     } else if (!ev.shiftKey && _lastFocusableChild === ev.target) {
-      _firstFocusableChild.focus();
+      _firstFocusableChild!.focus();
       ev.preventDefault();
       ev.stopPropagation();
     }

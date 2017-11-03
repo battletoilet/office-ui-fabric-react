@@ -5,20 +5,23 @@ import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import {
   DetailsList,
   DetailsListLayoutMode,
-  Selection
+  Selection,
+  IColumn
 } from 'office-ui-fabric-react/lib/DetailsList';
 import { MarqueeSelection } from 'office-ui-fabric-react/lib/MarqueeSelection';
+import { autobind } from 'office-ui-fabric-react/lib/Utilities';
 
-let _items = [];
+let _items: any[] = [];
 
-let _columns = [
+let _columns: IColumn[] = [
   {
     key: 'column1',
     name: 'Name',
     fieldName: 'name',
     minWidth: 100,
     maxWidth: 200,
-    isResizable: true
+    isResizable: true,
+    ariaLabel: 'Operations for name'
   },
   {
     key: 'column2',
@@ -26,7 +29,8 @@ let _columns = [
     fieldName: 'value',
     minWidth: 100,
     maxWidth: 200,
-    isResizable: true
+    isResizable: true,
+    ariaLabel: 'Operations for value'
   },
 ];
 
@@ -65,7 +69,7 @@ export class DetailsListBasicExample extends React.Component<any, any> {
         <div>{ selectionDetails }</div>
         <TextField
           label='Filter by name:'
-          onChanged={ text => this.setState({ items: text ? _items.filter(i => i.name.toLowerCase().indexOf(text) > -1) : _items }) }
+          onChanged={ this._onChanged }
         />
         <MarqueeSelection selection={ this._selection }>
           <DetailsList
@@ -75,7 +79,9 @@ export class DetailsListBasicExample extends React.Component<any, any> {
             layoutMode={ DetailsListLayoutMode.fixedColumns }
             selection={ this._selection }
             selectionPreservedOnEmptyClick={ true }
-            onItemInvoked={ (item) => alert(`Item invoked: ${item.name}`) }
+            ariaLabelForSelectionColumn='Toggle selection'
+            ariaLabelForSelectAllCheckbox='Toggle selection for all items'
+            onItemInvoked={ this._onItemInvoked }
           />
         </MarqueeSelection>
       </div>
@@ -94,4 +100,14 @@ export class DetailsListBasicExample extends React.Component<any, any> {
         return `${selectionCount} items selected`;
     }
   }
+
+  @autobind
+  private _onChanged(text: any): void {
+    this.setState({ items: text ? _items.filter(i => i.name.toLowerCase().indexOf(text) > -1) : _items });
+  }
+
+  private _onItemInvoked(item: any): void {
+    alert(`Item invoked: ${item.name}`);
+  }
+
 }

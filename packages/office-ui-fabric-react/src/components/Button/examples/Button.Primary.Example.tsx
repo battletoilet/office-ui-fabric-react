@@ -8,16 +8,16 @@ export class ButtonPrimaryExample extends React.Component<IButtonProps, {}> {
   }
 
   public render() {
-    let { disabled, toggled } = this.props;
+    let { disabled, checked } = this.props;
 
     return (
       <div className='ms-BasicButtonsExample'>
-        <Label>Primary button</Label>
         <PrimaryButton
           data-automation-id='test'
           disabled={ disabled }
-          toggled={ toggled }
+          checked={ checked }
           text='Create account'
+          // tslint:disable-next-line:jsx-no-lambda
           onClick={ () => alert('Clicked') }
         />
       </div>

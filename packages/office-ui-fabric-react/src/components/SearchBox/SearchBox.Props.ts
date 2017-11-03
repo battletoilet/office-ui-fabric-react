@@ -1,11 +1,13 @@
 import * as React from 'react';
-import { SearchBox } from './SearchBox';
 
 export interface ISearchBox {
-
+  /**
+   * Sets focus inside the search input box.
+   */
+  focus(): void;
 }
 
-export interface ISearchBoxProps extends React.Props<SearchBox> {
+export interface ISearchBoxProps extends React.InputHTMLAttributes<HTMLInputElement> {
   /**
    * Optional callback to access the ISearchBox interface. Use this instead of ref for accessing
    * the public methods and properties of the component.
@@ -29,6 +31,16 @@ export interface ISearchBoxProps extends React.Props<SearchBox> {
   onSearch?: (newValue: any) => void;
 
   /**
+   * Callback executed when the user clears the search box by either clicking 'X' or hitting escape.
+   */
+  onClear?: (ev?: any) => void;
+
+  /**
+   * Callback executed when the user presses escape in the search box.
+   */
+  onEscape?: (ev?: any) => void;
+
+  /**
    * Deprecated at v0.52.2, use 'onChange' instead.
    * @deprecated
    */
@@ -49,4 +61,10 @@ export interface ISearchBoxProps extends React.Props<SearchBox> {
    * @defaultvalue labelText
    */
   ariaLabel?: string;
+
+  /**
+   * Whether or not the SearchBox is underlined.
+   * @default false
+   */
+  underlined?: boolean;
 }

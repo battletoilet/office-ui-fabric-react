@@ -9,38 +9,37 @@
 @import '../Label/LabelMixins.scss';
 
 // component slots
-$field-background-color: $fieldBackgroundColor;
+$field-background-color: $bodyBackgroundColor;
 $field-background-disabled-color: $disabledBackgroundColor;
 
-$field-border-color: $fieldBorderColor;
+$field-border-color: $inputBorderColor;
 $field-border-disabled-color: $disabledBackgroundColor;
-$field-border-hover-color: $fieldBorderHoverColor;
-$field-border-focus-color: $fieldBorderFocusColor;
+$field-border-hover-color: $inputBorderHoveredColor;
+$field-border-focus-color: $inputFocusBorderAltColor;
 $field-border-error-color: $errorTextColor;
 
-$field-text-color: $fieldTextColor;
+$field-text-color: $bodyTextColor;
 $field-text-disabled-color: $disabledTextColor;
 
-$field-placeholder-color: $fieldPlaceholderColor;
-$field-placeholder-disabled-color: $disabledSubtextColor;
+$field-placeholder-color: $bodySubtextColor;
+$field-placeholder-disabled-color: $disabledTextColor;
 
 $field-description-color: $bodySubtextColor;
 $field-error-color: $errorTextColor;
 
 // the box containing the label and input field
 .root {
-  @include ms-baseFont;
-  @include ms-u-normalize;
-  margin-bottom: 8px;
+  @include ms-normalize;
   position: relative; /* Needed to position icon */
 }
 
 .screenReaderOnly {
-  @include ms-u-screenReaderOnly;
+  @include ms-screenReaderOnly;
 }
 
 //= State: default
 .fieldGroup {
+  @include ms-normalize;
   border: 1px solid $field-border-color;
   background: $field-background-color;
   height: 32px;
@@ -57,7 +56,7 @@ $field-error-color: $errorTextColor;
     border-color: $field-border-focus-color;
   }
 
-  .rootIsDisabled > & {
+  .rootIsDisabled & {
     background-color: $field-background-disabled-color;
     border-color: $field-border-disabled-color;
     pointer-events: none;
@@ -66,12 +65,8 @@ $field-error-color: $errorTextColor;
 
   &:hover,
   &.fieldGroupIsFocused {
-    @media screen and (-ms-high-contrast: active) {
-      border-color: $ms-color-contrastBlackSelected;
-    }
-
-    @media screen and (-ms-high-contrast: black-on-white) {
-      border-color: $ms-color-contrastWhiteSelected;
+    @include high-contrast {
+      border-color: Highlight;
     }
   }
 
@@ -100,13 +95,13 @@ $field-error-color: $errorTextColor;
 }
 
 .field {
-  @include ms-u-normalize;
-  @include ms-baseFont;
+  @include ms-normalize;
   font-size: $ms-font-size-m;
   border-radius: 0;
   border: none;
+  background: none;
   color: $field-text-color;
-  @include padding(0, 12px, 0, 12px);
+  @include ms-padding(0, 12px, 0, 12px);
   width: 100%;
   text-overflow: ellipsis;
   outline: 0;
@@ -116,7 +111,7 @@ $field-error-color: $errorTextColor;
       outline: 0;
     }
   &.hasIcon {
-    @include padding-right(24px);
+    @include ms-padding-right(24px);
   }
 
   &[disabled] {
@@ -127,16 +122,39 @@ $field-error-color: $errorTextColor;
   }
 
   .field {
-      @include input-placeholder {
+    &::placeholder {
       color: $field-placeholder-disabled-color;
     }
   }
 }
 
 //= State: A required textfield
-.root.rootIsRequired {
+.root.rootIsRequiredLabel {
   :global(.ms-Label) {
-    @include ms-Label-is-required
+    @include ms-Label-is-required;
+  }
+}
+
+.root.rootIsRequiredPlaceholderOnly {
+  :global(.ms-TextField-fieldGroup) {
+    &::after {
+      content: ' *';
+      color: $ms-color-error;
+      @include ms-padding-right(12px);
+    }
+  }
+}
+
+.root.rootIsRequiredPlaceholderIcon {
+  :global(.ms-Icon) {
+    &::before {
+      content: ' *';
+      color: $ms-color-error;
+      position: absolute;
+      top: -4px;
+      @include ms-right(8px);
+      @include ms-padding-right(12px);
+    }
   }
 }
 
@@ -145,17 +163,14 @@ $field-error-color: $errorTextColor;
   border-color: $field-border-focus-color;
 }
 
-.errorIcon {
-  vertical-align: middle;
-  font-size: $ms-font-size-m;
-  @include margin-right(5px);
-}
-
 .icon {
+  pointer-events: none;
   position: absolute;
-  bottom: 8px;
+  bottom: 5px;
   @include right(8px);
   top: auto;
+  font-size: 16px;
+  line-height: 18px;
 }
 
 .description {
@@ -165,40 +180,46 @@ $field-error-color: $errorTextColor;
 
 .rootIsBorderless .fieldGroup {
   border-color: transparent;
+  border-width: 0;
 }
 
 //== Modifier: Single line (default), underlined
 .root.rootIsUnderlined {
-  border-bottom: 1px solid $field-border-color;
   border-width: 0px;
-  border-bottom-width: 1px;
-  display: flex;
-  width: 100%;
 
   &:hover:not(.rootIsDisabled) {
     border-color: $field-border-hover-color;
 
-    @media screen and (-ms-high-contrast: active) {
-      border-color: $ms-color-contrastBlackSelected;
+    @include high-contrast {
+      border-color: Highlight;
     }
+  }
 
-    @media screen and (-ms-high-contrast: black-on-white) {
-      border-color: $ms-color-contrastWhiteSelected;
+  .wrapper {
+    display: flex;
+    border-bottom: 1px solid $field-border-color;
+    width: 100%;
+
+    &.invalid,
+    &.invalid:focus,
+    &.invalid:hover {
+      border-bottom: 1px solid $field-border-error-color;
     }
   }
 
   :global(.ms-Label) {
     font-size: $ms-font-size-m;
-    @include margin-right(8px);
-    @include padding-left(12px);
+    @include ms-margin-right(8px);
+    @include ms-padding-left(12px);
     line-height: 22px; // 32px minus 5px padding top/bottom
     height: 32px;
   }
 
   .fieldGroup {
-    flex: 1 1 0;
-    border: 0;
-    @include text-align(left);
+    flex: 1 1 0px;
+    border-width: 0;
+
+    @include ms-text-align(left);
   }
 
   &.rootIsDisabled {
@@ -212,17 +233,17 @@ $field-error-color: $errorTextColor;
       background-color: transparent;
       color: $field-text-disabled-color;
     }
+
+    .fieldGroup {
+      background-color: transparent;
+    }
   }
 
   &.rootIsActive {
     border-color: $field-border-focus-color;
 
-    @media screen and (-ms-high-contrast: active) {
-      border-color: $ms-color-contrastBlackSelected;
-    }
-
-    @media screen and (-ms-high-contrast: black-on-white) {
-      border-color: $ms-color-contrastWhiteSelected;
+    @include high-contrast {
+      border-color: Highlight;
     }
   }
 }
@@ -236,14 +257,16 @@ $field-error-color: $errorTextColor;
     height: auto;
     display: flex;
   }
+
   .field {
     line-height: 17px;
     flex-grow: 1;
     padding-top: 6px;
     overflow: auto;
     width: 100%;
+
     &.hasIcon {
-      @include padding-right(40px);
+      @include ms-padding-right(40px);
     }
   }
 }
@@ -252,8 +275,10 @@ $field-error-color: $errorTextColor;
 .errorMessage {
   @include ms-font-s;
   color: $field-error-color;
-  @include resetMargins;
+  margin: 0;
   padding-top: 5px;
+  display: flex;
+  align-items: center;
 }
 
 .invalid,
@@ -265,8 +290,8 @@ $field-error-color: $errorTextColor;
 .root.rootIsUnderlined {
 
   :global(.ms-Label) {
-    @include padding-left(12px);
-    @include padding-right(0);
+    @include ms-padding-left(12px);
+    @include ms-padding-right(0);
   }
 
   .field {
@@ -277,7 +302,7 @@ $field-error-color: $errorTextColor;
 .root.rootIsMultiline {
 
   .icon {
-    @include padding-right(24px);
+    @include ms-padding-right(24px);
     padding-bottom: 8px;
     align-items: flex-end;
   }

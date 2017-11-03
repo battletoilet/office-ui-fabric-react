@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { DatePicker } from './DatePicker';
 import { DayOfWeek } from '../../Calendar';
+import { FirstWeekOfYear } from '../../utilities/dateValues/DateValues';
+import { ICalendarFormatDateCallbacks } from '../Calendar/Calendar.Props';
 
 export interface IDatePicker {
 
@@ -16,7 +18,7 @@ export interface IDatePickerProps extends React.Props<DatePicker> {
   /**
    * Callback issued when a date is selected
    */
-  onSelectDate?: (date: Date) => void;
+  onSelectDate?: (date: Date | null | undefined) => void;
 
   /**
    * Label for the DatePicker
@@ -53,6 +55,12 @@ export interface IDatePickerProps extends React.Props<DatePicker> {
   isMonthPickerVisible?: boolean;
 
   /**
+  * Show month picker on top of date picker when visible.
+  * @defaultvalue false
+  */
+  showMonthPickerAsOverlay?: boolean;
+
+  /**
    * Whether the DatePicker allows input a date string directly or not
    * @defaultvalue false
    */
@@ -70,6 +78,11 @@ export interface IDatePickerProps extends React.Props<DatePicker> {
   placeholder?: string;
 
   /**
+    * Value of today. If null, current time in client machine will be used.
+    */
+    today?: Date;
+
+  /**
    * Default value of the DatePicker, if any
    */
   value?: Date;
@@ -84,7 +97,7 @@ export interface IDatePickerProps extends React.Props<DatePicker> {
    * Optional method to parse the text input value to date, it is only useful when allowTextInput is set to true
    * @defaultvalue new Date(Date.parse(dateStr))
    */
-  parseDateFromString?: (dateStr: string) => Date;
+  parseDateFromString?: (dateStr: string) => Date | null;
 
   /**
    * The first day of the week for your locale.
@@ -98,15 +111,44 @@ export interface IDatePickerProps extends React.Props<DatePicker> {
   strings?: IDatePickerStrings;
 
   /**
+  * Whether the month picker should highlight the current month
+  * @defaultvalue false
+  */
+  highlightCurrentMonth?: boolean;
+
+  /**
+  * Whether the calendar should show the week number (weeks 1 to 53) before each week row
+  * @defaultvalue false
+  */
+  showWeekNumbers?: boolean;
+
+  /**
+  * Defines when the first week of the year should start, FirstWeekOfYear.FirstDay,
+  * FirstWeekOfYear.FirstFullWeek or FirstWeekOfYear.FirstFourDayWeek are the possible values
+  * @defaultvalue FirstWeekOfYear.FirstFullWeek
+  */
+  firstWeekOfYear?: FirstWeekOfYear;
+
+  /**
+   * Whether the "Go to today" link should be shown or not
+   */
+  showGoToToday?: boolean;
+
+  /**
    * Determines if DatePicker has a border.
    * @defaultvalue false
    */
   borderless?: boolean;
-  
+
   /**
    * Optional Classname for datepicker root element .
    */
   className?: string;
+
+  /**
+  * Apply additional formating to dates, for example localized date formatting.
+  */
+  dateTimeFormatter?: ICalendarFormatDateCallbacks;
 }
 
 export interface IDatePickerStrings {
