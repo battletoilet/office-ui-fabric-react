@@ -65,4 +65,9 @@ export interface ITeachingBubbleProps extends React.Props<TeachingBubble | Teach
    * Callback when the TeachingBubble tries to close.
    */
   onDismiss?: (ev?: any) => void;
+
+  /**
+   * Variant for the coachMark
+   */
+  isCoachmark?: boolean;
 }

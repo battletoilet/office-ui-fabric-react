@@ -11,6 +11,8 @@ const styles: any = stylesImport;
 
 export interface ITeachingBubbleState {
   isTeachingBubbleVisible?: boolean;
+  isCoachmarkAnimating?: boolean;
+  isCoachmarkWiggling?: boolean;
 }
 
 export class TeachingBubble extends BaseComponent<ITeachingBubbleProps, ITeachingBubbleState> {
@@ -26,26 +28,73 @@ export class TeachingBubble extends BaseComponent<ITeachingBubbleProps, ITeachin
     }
   };
 
+  private _currentHeight: number;
+  private _currentWidth: number;
+  private _coachmark: HTMLDivElement;
+
   // Constructor
   constructor(props: ITeachingBubbleProps) {
     super(props);
 
     this.state = {
+      isCoachmarkAnimating: false,
+      isCoachmarkWiggling: props.isCoachmark // If it's not a Coachmark then we dont want to start animating the TeachingBubble right away
     };
   }
 
+  public componentDidMount() {
+    const rect = this._coachmark.getBoundingClientRect();
+    const height = rect.height;
+    const width = rect.width;
+  }
+
   public render() {
-    let { calloutProps, targetElement } = this.props;
+    let { calloutProps, targetElement, isCoachmark } = this.props;
+
+    const classes = css(
+      'ms-TeachingBubble',
+      styles.root,
+      {
+        ['ms-TeachingBubble--coachmark']: isCoachmark!
+      }
+    );
 
     return (
       <Callout
-        className={ css('ms-TeachingBubble', styles.root) }
+        className={ classes }
         ref={ this._resolveRef('_callout') }
         target={ targetElement }
+        parentClassName={ css({
+          [styles.coachmarkCalloutContainer]: isCoachmark,
+          [styles.coachmarkIsWiggling]: this.state.isCoachmarkWiggling,
+          [styles.coachmarkIsAnimating]: this.state.isCoachmarkAnimating
+        }) }
         {...calloutProps}
       >
-        <TeachingBubbleContent { ...this.props } />
+        <div
+          className={ css({
+            [styles.animationLayer]: isCoachmark!,
+            ['TeachingBubble-animationLayer']: isCoachmark!
+          }) }
+          onClick={ this._onClickHandler }
+          ref={ this._resolveRef('_coachmark') }
+        >
+          <TeachingBubbleContent { ...this.props } />
+        </div>
       </Callout>
     );
+  }
+
+  private _onClickHandler() {
+    this.setState({
+      isCoachmarkAnimating: true,
+      isCoachmarkWiggling: false
+    });
+  }
+
+  private _coachmarkOnClickHandler() {
+
+    // Set the height and width of the element
+
   }
 }

@@ -115,6 +115,7 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
       beakStyle,
       children,
       beakWidth,
+      parentClassName,
       calloutWidth,
       finalHeight,
       backgroundColor,
@@ -144,15 +145,12 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
       : '';
 
     let getContentMaxHeight: number = this._getMaxHeight() + this.state.heightOffset!;
-    let contentMaxHeight: number = calloutMaxHeight! && (calloutMaxHeight! > getContentMaxHeight) ? getContentMaxHeight : calloutMaxHeight!;
+    let contentMaxHeight: number = calloutMaxHeight! && (calloutMaxHeight! < getContentMaxHeight) ? calloutMaxHeight! : getContentMaxHeight!;
 
     let beakVisible = isBeakVisible && (!!target);
 
     let content = (
-      <div
-        ref={ this._resolveRef('_hostElement') }
-        className={ css('ms-Callout-container', styles.container) }
-      >
+      <div ref={ this._resolveRef('_hostElement') } className={ css('ms-Callout-container', styles.container, parentClassName) }>
         <div
           className={
             mergeStyles(
@@ -211,6 +209,7 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
     if (this.state.positions && !preventDismissOnScroll) {
       this._dismissOnLostFocus(ev);
     }
+    this._updatePosition();
   }
 
   protected _dismissOnLostFocus(ev: Event) {
@@ -334,10 +333,12 @@ export class CalloutContent extends BaseComponent<ICalloutProps, ICalloutState> 
         const oldPositionEdge = oldPositions[key];
         const newPositionEdge = newPositions[key];
 
-        if (oldPositionEdge && newPositionEdge) {
+        if (oldPositionEdge !== undefined && newPositionEdge !== undefined) {
           if (oldPositionEdge.toFixed(2) !== newPositionEdge.toFixed(2)) {
             return false;
           }
+        } else {
+          return false;
         }
       }
     }

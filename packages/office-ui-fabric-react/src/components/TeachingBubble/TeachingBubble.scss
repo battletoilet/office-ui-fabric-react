@@ -121,3 +121,178 @@
     border-color: $ms-color-white;
   }
 }
+
+/*
+  TEACHING BUBBLE
+*/
+$coachmarkCircleRadius: 50%;
+@mixin coachmarkPopWiggleSettings {
+  animation-duration: 2.55s;
+  animation-timing-function: linear;
+  animation-direction: normal;
+  animation-iteration-count: infinite;
+  animation-delay: 0s;
+}
+
+@mixin coachMarkAnimateOutTransition {
+  transition: border-radius 250ms, width 500ms, height 500ms cubic-bezier(0.5, 0, 0, 1);
+}
+
+.coachmarkIsWiggling {
+  @include coachmarkPopWiggleSettings();
+  animation-name: pop;
+  cursor: pointer;
+
+  :global(.ms-Callout) {
+     @include coachmarkPopWiggleSettings();
+     animation-name: wiggle;
+  }
+}
+
+.coachmarkCalloutContainer .bodyContent,
+.coachmarkCalloutContainer .content {
+  overflow: hidden;
+}
+
+.coachmarkCalloutContainer {
+  :global(.ms-Callout),
+  .content {
+    width: 50px;
+    height: 50px;
+    border-radius: $coachmarkCircleRadius;
+    position: relative;
+    @include coachMarkAnimateOutTransition();
+
+    :global(.ms-Callout-beak) {
+      left: -4px !important;
+      box-shadow: 0;
+    }
+  }
+}
+
+.coachmarkCalloutContainer :global(.ms-Callout) {
+  :global(.ms-Callout-beakCurtain) {
+    background-color: $ms-color-themePrimary;
+    border-radius:  $coachmarkCircleRadius;
+    @include coachMarkAnimateOutTransition();
+  }
+
+  :global(.ms-Callout-main) {
+    border-radius:  $coachmarkCircleRadius;
+    @include coachMarkAnimateOutTransition();
+  }
+}
+
+.coachmarkCalloutContainer .bodyContent {
+  transition: transform 500ms cubic-bezier(0.5, 0, 0, 1);
+  transform: scale(0);
+  transform-origin: top left;
+}
+
+.icon {
+  color: $ms-color-white;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  margin-top: 13px;
+  margin-left: 13px;
+  transition: opacity 100ms, transform 100ms cubic-bezier(0.33, 0, 0.66, 1);
+}
+
+.coachmarkIsAnimating .icon {
+  opacity: 0.8;
+  transform: scale(0);
+  display: none;
+}
+
+.coachmarkIsAnimating {
+  :global(.ms-Callout),
+  .content {
+    border-radius: 1px;
+    width: 362px;
+    height: 116px;
+
+    :global(.ms-Callout-beakCurtain) {
+      border-radius: 0;
+    }
+
+    :global(.ms-Callout-main) {
+      border-radius: 0;
+    }
+  }
+}
+
+.coachmarkIsAnimating .bodyContent {
+  display: block;
+  transform: scale(1);
+}
+
+.coachmarkIsAnimating .content {
+  border-radius: 0;
+  width: 362px;
+  height: 116px;
+}
+
+@keyframes pop {
+    0% {
+        transform: translate(102.31px, 103.31px);
+        animation-timing-function: linear;
+    }
+    17.65% {
+        transform: translate(102.31px, 103.31px);
+        animation-timing-function: cubic-bezier(0.62, 0, 0.56, 1);
+    }
+    40.52% {
+        transform: translate(102.31px, 100.81px);
+        animation-timing-function: cubic-bezier(0.58, 0, 0, 1);
+    }
+    55.56% {
+        transform: translate(102.31px, 114.31px);
+        animation-timing-function: cubic-bezier(1, 0, 0.56, 1);
+    }
+    73.2% {
+        transform: translate(102.31px, 100.81px);
+        animation-timing-function: cubic-bezier(0.58, 0, 0.67, 1);
+    }
+    84.31% {
+        transform: translate(102.31px, 103.31px);
+        animation-timing-function: linear;
+    }
+    100% {
+        transform: translate(102.31px, 103.31px);
+    }
+}
+
+@keyframes wiggle {
+    0% {
+        transform: rotate(0deg);
+        animation-timing-function: linear;
+    }
+    47.06% {
+        transform: rotate(0deg);
+        animation-timing-function: cubic-bezier(0.33, 0, 0.67, 1);
+    }
+    50.33% {
+        transform: rotate(5deg);
+        animation-timing-function: cubic-bezier(0.33, 0, 0.67, 1);
+    }
+    53.59% {
+        transform: rotate(-5deg);
+        animation-timing-function: cubic-bezier(0.33, 0, 0.67, 1);
+    }
+    56.86% {
+        transform: rotate(5deg);
+        animation-timing-function: cubic-bezier(0.33, 0, 0.67, 1);
+    }
+    60.13% {
+        transform: rotate(-5deg);
+        animation-timing-function: cubic-bezier(0.33, 0, 0.67, 1);
+    }
+    63.4% {
+        transform: rotate(0deg);
+        animation-timing-function: linear;
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}

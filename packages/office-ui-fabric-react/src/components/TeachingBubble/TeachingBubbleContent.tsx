@@ -10,8 +10,14 @@ import { ITeachingBubbleProps } from './TeachingBubble.Props';
 import { ITeachingBubbleState } from './TeachingBubble';
 import { PrimaryButton, DefaultButton, IconButton } from '../../Button';
 import { Image, ImageFit } from '../../Image';
+import { Icon, IconName } from '../../Icon';
 import * as stylesImport from './TeachingBubble.scss';
 const styles: any = stylesImport;
+
+export interface ITeachingBubbleClassNames {
+  base?: string;
+  variant?: string;
+}
 
 export class TeachingBubbleContent extends BaseComponent<ITeachingBubbleProps, ITeachingBubbleState> {
 
@@ -22,6 +28,10 @@ export class TeachingBubbleContent extends BaseComponent<ITeachingBubbleProps, I
       imageFit: ImageFit.cover,
       width: 364,
       height: 130
+    },
+    classNames: {
+      base: 'ms-TeachingBubble',
+      variant: ''
     }
   };
 
@@ -38,13 +48,20 @@ export class TeachingBubbleContent extends BaseComponent<ITeachingBubbleProps, I
   }
 
   public render() {
-    let { illustrationImage, primaryButtonProps, secondaryButtonProps, headline, hasCondensedHeadline, hasCloseIcon, onDismiss, closeButtonAriaLabel } = this.props;
+    let { illustrationImage, primaryButtonProps, secondaryButtonProps, headline, hasCondensedHeadline, hasCloseIcon, onDismiss, closeButtonAriaLabel, isCoachmark } = this.props;
 
     let imageContent;
     let headerContent;
     let bodyContent;
     let footerContent;
     let closeButton;
+    let coachMarkIcon;
+
+    if (isCoachmark) {
+      coachMarkIcon = (
+        <Icon className={ css('TeachingBubble-icon', styles.icon) } iconName={ 'Lightbulb' } />
+      );
+    }
 
     if (illustrationImage && illustrationImage.src) {
       imageContent = (
@@ -113,7 +130,8 @@ export class TeachingBubbleContent extends BaseComponent<ITeachingBubbleProps, I
     }
 
     return (
-      <div className={ css('ms-TeachingBubble-content') }>
+      <div className={ css('ms-TeachingBubble-content', styles.content) }>
+        { coachMarkIcon }
         { imageContent }
         { closeButton }
         <div className={ css('ms-TeachingBubble-bodycontent', styles.bodyContent) }>
